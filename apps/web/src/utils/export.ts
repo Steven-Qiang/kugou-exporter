@@ -3,9 +3,10 @@ import { formatDuration } from '@/utils/format';
 
 export type ExportFormat = 'xiaomusic' | 'json' | 'csv';
 
-export function buildProxyUrl(serverUrl: string, song: Song, quality: string): string {
+export function buildProxyUrl(serverUrl: string, song: Song, quality: string, userid?: string | number): string {
   const base = serverUrl.replace(/\/+$/, '');
-  return `${base}/proxy/song/url?hash=${song.hash}&quality=${quality}`;
+  const uid = userid ? `&uid=${encodeURIComponent(String(userid))}` : '';
+  return `${base}/proxy/song/url?hash=${song.hash}&quality=${quality}${uid}`;
 }
 
 export function buildCsvContent(songs: Song[]): string {

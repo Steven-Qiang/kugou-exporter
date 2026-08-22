@@ -33,6 +33,8 @@ router.beforeEach(async (to, from, next) => {
     try {
       const res = await request.get<UserInfo>('/user/detail');
       cachedUserInfo = res.data;
+      // 把当前账号的登录态存到服务端（多账号：按 userid 归档，设为激活账号）
+      request.post('/config/save', { userid: res.data.userid }).catch(() => {});
       next();
     } catch {
       cachedUserInfo = null;

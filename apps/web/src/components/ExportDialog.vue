@@ -204,6 +204,7 @@ import { Clock, CopyDocument, Download } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { ElMessage } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
+import { getCachedUserInfo } from '@/router';
 import { buildCsvContent, buildProxyUrl, csvFilename, downloadText, jsonFilename } from '@/utils/export';
 import { addExportHistory, getExportHistory, removeExportHistory } from '@/utils/history';
 import request from '@/utils/request';
@@ -239,7 +240,7 @@ const dialogTitle = computed(() => {
 });
 
 function setHistory() {
-  history.value = getExportHistory();
+  history.value = getExportHistory(currentUserId());
 }
 
 function toggleHistory() {
@@ -262,19 +263,24 @@ function reuseHistory(item: ExportRecord) {
 }
 
 function deleteHistory(id: string) {
-  history.value = removeExportHistory(id);
+  history.value = removeExportHistory(id, currentUserId());
   ElMessage.success('已删除');
 }
 
 async function loadConfig() {
   try {
-    const res = await request.get<{ serverUrl: string }>('/config/get');
+    const res = await request.get<{ serverUrl: string; settings?: { quality?: string } }>('/config/get');
     form.value.serverUrl = res.data.serverUrl;
+    if (res.data.settings?.quality) form.value.quality = res.data.settings.quality;
     const vipRes = await request.get<{ nickname: string; vip_type: number }>('/user/detail/vip');
     vipInfo.value = vipRes.data;
   } catch (error) {
     console.error(error);
   }
+}
+
+function currentUserId(): string | number | undefined {
+  return getCachedUserInfo()?.userid;
 }
 
 function showXiaomusicConfig() {
@@ -287,7 +293,7 @@ async function confirmExport() {
     return;
   }
   try {
-    await request.post('/config/save', form.value);
+    await request.post('/config/save', { ...form.value, userid: currentUserId() });
   } catch {
     ElMessage.error('保存配置失败');
     return;
@@ -314,7 +320,7 @@ async function handleExport(type: 'xiaomusic' | 'json' | 'csv') {
         exportDetail.value.fetchedCount = i + 1;
         xiaomusicSongs.push({
           name: song.name,
-          url: buildProxyUrl(form.value.serverUrl, song, form.value.quality),
+          url: buildProxyUrl(form.value.serverUrl, song, form.value.quality, currentUserId()),
         });
         exportProgress.value = Math.floor(((i + 1) / sortedSongs.length) * 100);
         exportStatus.value = `正在生成链接 ${i + 1}/${sortedSongs.length}`;
@@ -334,18 +340,24 @@ async function handleExport(type: 'xiaomusic' | 'json' | 'csv') {
       a.click();
       URL.revokeObjectURL(url);
       exportProgress.value = 100;
-      addExportHistory({ playlistName: playlistName.value, format: type, count: sortedSongs.length, content });
+      addExportHistory(
+        { playlistName: playlistName.value, format: type, count: sortedSongs.length, content },
+        currentUserId()
+      );
       ElMessage.success(`导出成功！共 ${sortedSongs.length} 首`);
       handleClose();
       return;
     }
 
-    addExportHistory({
-      playlistName: playlistName.value,
-      format: type,
-      count: sortedSongs.length,
-      content: exportResult.value,
-    });
+    addExportHistory(
+      {
+        playlistName: playlistName.value,
+        format: type,
+        count: sortedSongs.length,
+        content: exportResult.value,
+      },
+      currentUserId()
+    );
     exportStatus.value = '导出完成！';
     exportProgress.value = 100;
     ElMessage.success(`导出成功！共 ${exportDetail.value.successCount || sortedSongs.length} 首`);

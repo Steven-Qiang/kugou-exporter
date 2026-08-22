@@ -131,6 +131,7 @@
 import type { Song, SongUrl } from '@/types';
 import { ElMessage } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
+import { getCachedUserInfo } from '@/router';
 import { replaceImageSize } from '@/utils/image';
 import request from '@/utils/request';
 import QualitySelect from './QualitySelect.vue';
@@ -160,7 +161,8 @@ const serverUrl = ref('');
 
 const proxyUrl = computed(() => {
   if (!song.value || !serverUrl.value) return '';
-  return `${serverUrl.value}/proxy/song/url?hash=${song.value.hash}&quality=${quality.value}`;
+  const uid = getCachedUserInfo()?.userid ? `&uid=${getCachedUserInfo()?.userid}` : '';
+  return `${serverUrl.value}/proxy/song/url?hash=${song.value.hash}&quality=${quality.value}${uid}`;
 });
 
 const xiaomusicJson = computed(() => {

@@ -1,45 +1,57 @@
 const kugoumusicapi = require('kugoumusicapi');
 const kugoumusicapi_util = require('kugoumusicapi/util');
-const { getConfig, saveConfig } = require('./config');
+const { getAccountCookies, setAccount, getActiveUserId } = require('./config');
 
-let last_refresh_time = 0;
+const lastRefresh = {};
 
-async function refreshLogin() {
+/**
+ * Refresh the login token for one account (1h throttle per account).
+ * @param {string} [userId]
+ * @returns {Promise<object>} the account cookies
+ */
+async function refreshLogin(userId) {
+  const key = userId || getActiveUserId();
   const now = Date.now();
-  if (now - last_refresh_time < 60 * 60 * 1000) {
-    // 一小时内不重复
-    return;
+  if (lastRefresh[key] && now - lastRefresh[key] < 60 * 60 * 1000) {
+    return getAccountCookies(key);
   }
-  last_refresh_time = now;
+  lastRefresh[key] = now;
   try {
-    const config = getConfig();
-    const resp = await kugoumusicapi.login_token(config.cookies);
-    if (resp.status == 200 && resp.cookie.length > 0) {
+    const cookies = getAccountCookies(key);
+    if (!cookies || Object.keys(cookies).length === 0) return cookies;
+    const resp = await kugoumusicapi.login_token(cookies);
+    if (resp.status == 200 && resp.cookie && resp.cookie.length > 0) {
       const new_cookies = kugoumusicapi_util.cookieToJson(resp.cookie.join(';'));
-      config.cookies = {
-        ...config.cookies,
-        ...new_cookies,
-      };
-      saveConfig(config);
+      const merged = { ...cookies, ...new_cookies };
+      setAccount(key, merged);
+      return merged;
     }
-    return config.cookies;
+    return cookies;
   } catch (error) {
     console.error('refreshToken', error);
+    return getAccountCookies(key);
   }
 }
-async function registerDev() {
+
+/**
+ * Register device (dfid) for one account and persist it.
+ * @param {string} [userId]
+ * @returns {Promise<object>} the account cookies
+ */
+async function registerDev(userId) {
+  const key = userId || getActiveUserId();
   try {
-    const config = getConfig();
-    const register_dev_resp = await kugoumusicapi.register_dev({
-      cookie: config.cookies,
-    });
-    if (register_dev_resp.body.status == 1 && register_dev_resp.body?.data?.dfid) {
-      config.cookies.dfid = register_dev_resp.body.data.dfid;
+    const cookies = getAccountCookies(key);
+    const resp = await kugoumusicapi.register_dev({ cookie: cookies });
+    if (resp.body.status == 1 && resp.body?.data?.dfid) {
+      const merged = { ...cookies, dfid: resp.body.data.dfid };
+      setAccount(key, merged);
+      return merged;
     }
-    saveConfig(config);
-    return config.cookies;
+    return cookies;
   } catch (error) {
     console.error('register_dev', error);
+    return getAccountCookies(key);
   }
 }
 

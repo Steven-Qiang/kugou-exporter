@@ -37,25 +37,33 @@
             />
           </svg>
         </a>
-        <div v-if="userInfo" class="user-chip">
-          <el-avatar :src="replaceImageSize(userInfo.pic, 100)" :size="32" />
-          <span class="user-name">{{ userInfo.nickname }}</span>
-          <button class="logout-btn" title="退出登录" @click="handleLogout">
-            <svg
-              viewBox="0 0 24 24"
-              width="16"
-              height="16"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <path d="M16 17l5-5-5-5M21 12H9" />
-            </svg>
-          </button>
-        </div>
+        <el-dropdown v-if="userInfo" trigger="click" @command="handleAccountCommand">
+          <div class="user-chip">
+            <el-avatar :src="replaceImageSize(userInfo.pic, 100)" :size="32" />
+            <span class="user-name">{{ userInfo.nickname }}</span>
+            <el-icon class="dropdown-arrow">
+              <arrow-down />
+            </el-icon>
+          </div>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="acct in accountList"
+                :key="acct.userId"
+                :command="{ type: 'switch', userId: acct.userId }"
+                :disabled="String(acct.userId) === String(activeUserId)"
+              >
+                <span class="account-item">
+                  <span>{{ acct.nickname || acct.userId }}</span>
+                  <el-tag v-if="String(acct.userId) === String(activeUserId)" size="small" type="success">当前</el-tag>
+                </span>
+              </el-dropdown-item>
+              <el-dropdown-item divided :command="{ type: 'logout' }">
+                <span class="danger-text">退出登录</span>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
       </div>
     </header>
 
@@ -207,7 +215,7 @@
 
 <script setup lang="ts">
 import type { Playlist, PlaylistData, Song, SongListData } from '@/types';
-import { Download, Refresh, Search } from '@element-plus/icons-vue';
+import { ArrowDown, Download, Refresh, Search } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
 import ExportDialog from '@/components/ExportDialog.vue';
 import SongUrlDialog from '@/components/SongUrlDialog.vue';
@@ -229,6 +237,8 @@ function updateIsMobile() {
 }
 
 const userInfo = ref<any>(null);
+const accountList = ref<any[]>([]);
+const activeUserId = ref<string>('');
 const loading = ref(false);
 const loadingSongs = ref(false);
 const searchText = ref('');
@@ -344,6 +354,31 @@ function handleLogout() {
   router.push('/login');
 }
 
+async function loadAccounts() {
+  try {
+    const res = await request.get<{ accounts: any[]; activeUserId: string }>('/account/list');
+    accountList.value = res.data.accounts || [];
+    activeUserId.value = res.data.activeUserId || '';
+  } catch {
+    /* ignore */
+  }
+}
+
+async function handleAccountCommand(command: { type: string; userId?: string }) {
+  if (command.type === 'switch' && command.userId) {
+    try {
+      await request.post('/account/switch', { userid: command.userId });
+      ElMessage.success('已切换账号');
+      location.reload();
+    } catch (error) {
+      console.error(error);
+      ElMessage.error('切换账号失败');
+    }
+  } else if (command.type === 'logout') {
+    handleLogout();
+  }
+}
+
 function exitDemo() {
   disableDemo();
   ElMessage.success('已退出演示模式');
@@ -354,6 +389,7 @@ onMounted(() => {
   updateIsMobile();
   window.addEventListener('resize', updateIsMobile);
   fetchPlaylists();
+  loadAccounts();
 });
 
 onUnmounted(() => {
@@ -462,6 +498,28 @@ onUnmounted(() => {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.user-chip:hover {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.dropdown-arrow {
+  color: var(--text-3);
+  font-size: 13px;
+}
+
+.account-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.danger-text {
+  color: #f56c6c;
 }
 
 .user-name {
