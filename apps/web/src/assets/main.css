@@ -1,16 +1,253 @@
+:root {
+  /* Design tokens - Light theme */
+  --bg-base: #f5f6fb;
+  --bg-glow-1: rgba(120, 108, 231, 0.16);
+  --bg-glow-2: rgba(91, 141, 239, 0.16);
+  --surface: rgba(255, 255, 255, 0.78);
+  --surface-solid: #ffffff;
+  --surface-hover: rgba(255, 255, 255, 0.96);
+  --surface-muted: rgba(244, 245, 250, 0.8);
+  --border: rgba(28, 36, 66, 0.08);
+  --border-strong: rgba(28, 36, 66, 0.14);
+  --text-1: #171a26;
+  --text-2: #575e72;
+  --text-3: #99a0b2;
+  --accent: #6c5ce7;
+  --accent-2: #4f8ef7;
+  --accent-3: #f368a0;
+  --accent-soft: rgba(108, 92, 231, 0.12);
+  --accent-grad: linear-gradient(135deg, #7b6cff 0%, #4f8ef7 100%);
+  --shadow-1: 0 8px 30px rgba(31, 41, 80, 0.08);
+  --shadow-2: 0 18px 50px rgba(31, 41, 80, 0.14);
+  --radius: 16px;
+  --radius-sm: 10px;
+  --glass-blur: 18px;
+
+  color-scheme: light;
+  /* Element Plus overrides */
+  --el-color-primary: #6c5ce7;
+  --el-color-primary-light-3: #9387ff;
+  --el-color-primary-light-5: #b3aaff;
+  --el-color-primary-light-7: #d4cfff;
+  --el-color-primary-light-8: #e5e2ff;
+  --el-color-primary-light-9: #f2f0ff;
+  --el-color-primary-dark-2: #5a4bd0;
+  --el-border-radius-base: 10px;
+  --el-text-color-primary: #171a26;
+  --el-text-color-regular: #575e72;
+  --el-text-color-secondary: #99a0b2;
+  --el-fill-color-blank: #ffffff;
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+}
+
+html[data-theme='dark'] {
+  --bg-base: #0d0f1a;
+  --bg-glow-1: rgba(130, 116, 255, 0.18);
+  --bg-glow-2: rgba(78, 128, 241, 0.16);
+  --surface: rgba(30, 33, 52, 0.72);
+  --surface-solid: #1c1f30;
+  --surface-hover: rgba(38, 42, 64, 0.92);
+  --surface-muted: rgba(24, 27, 42, 0.72);
+  --border: rgba(255, 255, 255, 0.09);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --text-1: #f1f2f9;
+  --text-2: #a9aec4;
+  --text-3: #6b7188;
+  --accent: #8b7bff;
+  --accent-2: #6ea8ff;
+  --accent-3: #ff7fb1;
+  --accent-soft: rgba(139, 123, 255, 0.16);
+  --accent-grad: linear-gradient(135deg, #8b7bff 0%, #6ea8ff 100%);
+  --shadow-1: 0 8px 30px rgba(0, 0, 0, 0.35);
+  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.5);
+  --el-color-primary: #8b7bff;
+  --el-color-primary-light-3: #aa9dff;
+  --el-color-primary-light-5: #c3b9ff;
+  --el-color-primary-light-7: #dcd7ff;
+  --el-color-primary-light-8: #e9e6ff;
+  --el-color-primary-light-9: #f4f2ff;
+  --el-color-primary-dark-2: #6d5be0;
+  --el-text-color-primary: #f1f2f9;
+  --el-text-color-regular: #a9aec4;
+  --el-text-color-secondary: #6b7188;
+  --el-fill-color-blank: #1c1f30;
+  --el-bg-color: #1c1f30;
+  --el-bg-color-overlay: #222536;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  height: 100%;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  font-family:
+    'Inter',
+    'HarmonyOS Sans SC',
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--text-1);
+  background: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
 }
 
 #app {
   width: 100%;
   min-height: 100vh;
+}
+
+/* Decorative ambient background */
+.bg-scene {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  background: var(--bg-base);
+}
+
+.bg-scene::before {
+  content: '';
+  position: absolute;
+  top: -20%;
+  left: -10%;
+  width: 55vw;
+  height: 55vw;
+  background: radial-gradient(circle, var(--bg-glow-1) 0%, transparent 60%);
+  filter: blur(40px);
+}
+
+.bg-scene::after {
+  content: '';
+  position: absolute;
+  right: -10%;
+  bottom: -25%;
+  width: 60vw;
+  height: 60vw;
+  background: radial-gradient(circle, var(--bg-glow-2) 0%, transparent 62%);
+  filter: blur(40px);
+}
+
+/* Glass card helper */
+.glass {
+  background: var(--surface);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+/* Gradient text */
+.grad-text {
+  background: var(--accent-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Gradient primary button */
+.grad-btn.el-button--primary {
+  background: var(--accent-grad);
+  border: none;
+  box-shadow: 0 10px 24px -6px var(--accent-soft);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    filter 0.18s ease;
+}
+
+.grad-btn.el-button--primary:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+  box-shadow: 0 14px 30px -8px rgba(108, 92, 231, 0.5);
+}
+
+.grad-btn.el-button--primary:active {
+  transform: translateY(0);
+}
+
+/* Gradient icon badge */
+.grad-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-grad);
+  color: #fff;
+  border-radius: 14px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Utility */
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.muted {
+  color: var(--text-3);
+}
+
+/* Fade transition for route views (opacity only; avoids transient vertical
+   overflow that can flash a scrollbar and shift centered content sideways). */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Element Plus overlay consistency */
+.el-overlay {
+  backdrop-filter: blur(6px);
+}
+
+/* Dialog body scroll */
+.el-dialog__body {
+  max-height: 70vh;
+  overflow-y: auto;
 }

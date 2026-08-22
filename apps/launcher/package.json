@@ -10,7 +10,7 @@
     "chalk": "^5.6.2",
     "get-port": "^7.1.0",
     "js-yaml": "^4.1.0",
-    "kugoumusicapi": "git://github.com/MakcRe/KuGouMusicApi#v1.5.1"
+    "kugoumusicapi": "git://github.com/MakcRe/KuGouMusicApi#v1.6.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

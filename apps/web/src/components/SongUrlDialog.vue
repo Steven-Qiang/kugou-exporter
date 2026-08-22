@@ -1,10 +1,23 @@
 <template>
-  <el-dialog v-model="visible" title="歌曲链接" width="650px" @close="handleClose">
+  <el-dialog v-model="visible" title="歌曲链接" width="680px" top="5vh" @close="handleClose">
     <div v-if="error" class="url-error">
       {{ error }}
     </div>
-    <div v-else-if="song">
-      <el-tabs v-model="activeTab">
+    <template v-else-if="song">
+      <div class="song-header">
+        <img v-if="song.cover" :src="replaceImageSize(song.cover, 96)" class="song-head-cover" alt="">
+        <span v-else class="cover-fallback">{{ song.name?.charAt(0) }}</span>
+        <div class="song-head-info">
+          <div class="song-head-name">
+            {{ song.name }}
+          </div>
+          <div class="song-head-artist">
+            {{ artistNames(song) }}
+          </div>
+        </div>
+      </div>
+
+      <el-tabs v-model="activeTab" class="url-tabs">
         <el-tab-pane label="服务器代理" name="0">
           <div class="url-list">
             <div class="url-item">
@@ -13,7 +26,7 @@
             </div>
             <div class="url-item">
               <span class="url-label">代理链接</span>
-              <el-input :model-value="proxyUrl" readonly>
+              <el-input :model-value="proxyUrl" readonly class="copy-field">
                 <template #append>
                   <el-button type="primary" @click="copyUrl(proxyUrl)">
                     复制
@@ -23,6 +36,7 @@
             </div>
           </div>
         </el-tab-pane>
+
         <el-tab-pane label="直接链接" name="1">
           <div v-loading="loadingDirectUrls" class="url-list">
             <div class="url-item">
@@ -31,7 +45,7 @@
             </div>
             <div v-for="(url, index) in directUrls" :key="index" class="url-item">
               <span class="url-label">链接 {{ index + 1 }}</span>
-              <el-input :model-value="url" readonly>
+              <el-input :model-value="url" readonly class="copy-field">
                 <template #append>
                   <el-button type="primary" @click="copyUrl(url)">
                     复制
@@ -41,7 +55,7 @@
             </div>
             <div v-for="(url, index) in backupUrls" :key="`backup-${index}`" class="url-item">
               <span class="url-label">备用 {{ index + 1 }}</span>
-              <el-input :model-value="url" readonly>
+              <el-input :model-value="url" readonly class="copy-field">
                 <template #append>
                   <el-button type="primary" @click="copyUrl(url)">
                     复制
@@ -51,24 +65,26 @@
             </div>
           </div>
         </el-tab-pane>
-        <el-tab-pane label="XiaoMusic 格式" name="2">
+
+        <el-tab-pane label="XiaoMusic" name="2">
           <div class="url-list">
-            <el-input :model-value="xiaomusicJson" type="textarea" :rows="10" readonly />
-            <el-button type="primary" style="margin-top: 10px" @click="copyUrl(xiaomusicJson)">
+            <el-input :model-value="xiaomusicJson" type="textarea" :rows="10" readonly class="json-area" />
+            <el-button type="primary" style="align-self: flex-end" @click="copyUrl(xiaomusicJson)">
               复制 JSON
             </el-button>
           </div>
         </el-tab-pane>
+
         <el-tab-pane label="原始 JSON" name="3">
           <div v-loading="loadingRawJson" class="url-list">
-            <el-input :model-value="rawJson" type="textarea" :rows="10" readonly />
-            <el-button type="primary" style="margin-top: 10px" @click="copyUrl(rawJson)">
+            <el-input :model-value="rawJson" type="textarea" :rows="10" readonly class="json-area" />
+            <el-button type="primary" style="align-self: flex-end" @click="copyUrl(rawJson)">
               复制 JSON
             </el-button>
           </div>
         </el-tab-pane>
       </el-tabs>
-    </div>
+    </template>
     <div v-else class="url-loading">
       加载中...
     </div>
@@ -79,6 +95,7 @@
 import type { Song, SongUrl } from '@/types';
 import { ElMessage } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
+import { replaceImageSize } from '@/utils/image';
 import request from '@/utils/request';
 import QualitySelect from './QualitySelect.vue';
 
@@ -109,18 +126,17 @@ const xiaomusicJson = computed(() => {
     [
       {
         name: playlistName.value,
-        musics: [
-          {
-            name: song.value.name,
-            url: proxyUrl.value,
-          },
-        ],
+        musics: [{ name: song.value.name, url: proxyUrl.value }],
       },
     ],
     null,
     2
   );
 });
+
+function artistNames(s: Song): string {
+  return s.singerinfo?.map((x) => x.name).join(' / ') || '未知';
+}
 
 async function open(s: Song, name: string) {
   visible.value = true;
@@ -133,7 +149,6 @@ async function open(s: Song, name: string) {
   try {
     const configRes = await request.get<{ serverUrl: string }>('/config/get');
     serverUrl.value = configRes.data.serverUrl;
-
     playlistName.value = name;
     song.value = s;
   } catch (err) {
@@ -144,7 +159,6 @@ async function open(s: Song, name: string) {
 async function fetchDirectUrls() {
   if (!song.value) return;
   loadingDirectUrls.value = true;
-
   try {
     await request.get('/register/dev');
     const urlRes = await request.get<SongUrl>('/song/url', {
@@ -152,9 +166,7 @@ async function fetchDirectUrls() {
     });
     directUrls.value = urlRes.data?.url || [];
     backupUrls.value = urlRes.data?.backupUrl || [];
-    if (directUrls.value.length === 0 && backupUrls.value.length === 0) {
-      error.value = '该歌曲没有可用链接';
-    }
+    if (directUrls.value.length === 0 && backupUrls.value.length === 0) error.value = '该歌曲没有可用链接';
   } catch (err) {
     error.value = `获取链接失败: ${err}`;
   } finally {
@@ -165,7 +177,6 @@ async function fetchDirectUrls() {
 async function fetchRawJson() {
   if (!song.value) return;
   loadingRawJson.value = true;
-
   try {
     await request.get('/register/dev');
     const urlRes = await request.get<SongUrl>('/song/url', {
@@ -198,21 +209,13 @@ function handleClose() {
 }
 
 watch(activeTab, (val) => {
-  if (val === '1' && song.value && directUrls.value.length === 0) {
-    fetchDirectUrls();
-  }
-  if (val === '3' && song.value && !rawJson.value) {
-    fetchRawJson();
-  }
+  if (val === '1' && song.value && directUrls.value.length === 0) fetchDirectUrls();
+  if (val === '3' && song.value && !rawJson.value) fetchRawJson();
 });
 
 watch(directQuality, () => {
-  if (activeTab.value === '1' && song.value) {
-    fetchDirectUrls();
-  }
-  if (activeTab.value === '3' && song.value) {
-    fetchRawJson();
-  }
+  if (activeTab.value === '1' && song.value) fetchDirectUrls();
+  if (activeTab.value === '3' && song.value) fetchRawJson();
 });
 
 defineExpose({ open });
@@ -220,11 +223,59 @@ defineExpose({ open });
 
 <style scoped>
   .url-error {
-  padding: 15px;
-  background: #fef0f0;
-  border-radius: 4px;
-  border: 1px solid #fde2e2;
+  padding: 14px 16px;
+  background: rgba(245, 108, 108, 0.12);
+  border: 1px solid rgba(245, 108, 108, 0.3);
+  border-radius: 12px;
   color: #f56c6c;
+  font-size: 13px;
+}
+
+.song-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.song-head-cover {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.song-head-info {
+  min-width: 0;
+}
+
+.song-head-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.song-head-artist {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+.cover-fallback {
+  width: 64px;
+  height: 64px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent-grad);
+}
+
+.url-tabs :deep(.el-tabs__item) {
+  font-weight: 600;
 }
 
 .url-list {
@@ -241,15 +292,30 @@ defineExpose({ open });
 
 .url-label {
   font-weight: 500;
-  color: #606266;
-  font-size: 14px;
+  color: var(--text-2);
+  font-size: 13px;
   min-width: 60px;
   text-align: right;
+  flex-shrink: 0;
+}
+
+.copy-field {
+  flex: 1;
+}
+
+.copy-field :deep(input) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+}
+
+.json-area :deep(textarea) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
 }
 
 .url-loading {
   text-align: center;
   padding: 20px;
-  color: #909399;
+  color: var(--text-3);
 }
 </style>
