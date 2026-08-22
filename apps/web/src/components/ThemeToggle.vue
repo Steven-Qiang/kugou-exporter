@@ -64,6 +64,5 @@ function onToggle() {
 .theme-toggle:hover {
   color: var(--accent);
   background: var(--surface-hover);
-  transform: translateY(-1px);
 }
 </style>

@@ -148,7 +148,7 @@
                 :header-cell-style="{ background: 'var(--surface-muted)' }"
               >
                 <el-table-column type="index" label="#" :width="isMobile ? 44 : 52" align="center" />
-                <el-table-column label="歌曲" :min-width="isMobile ? 150 : 220">
+                <el-table-column label="歌曲" :min-width="isMobile ? 150 : 220" show-overflow-tooltip>
                   <template #default="{ row }">
                     <div class="song-cell">
                       <img v-if="row.cover" :src="replaceImageSize(row.cover, 64)" class="song-cover" alt="">
@@ -629,7 +629,7 @@ onUnmounted(() => {
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, rgba(55, 42, 130, 0.82) 0%, rgba(31, 36, 92, 0.68) 100%);
+  background: linear-gradient(100deg, rgba(24, 22, 20, 0.85) 0%, rgba(46, 36, 26, 0.72) 100%);
 }
 
 .banner:empty::before {

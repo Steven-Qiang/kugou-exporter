@@ -4,48 +4,73 @@
       {{ error }}
     </div>
     <template v-else-if="song">
-      <div class="song-header">
-        <img v-if="song.cover" :src="replaceImageSize(song.cover, 96)" class="song-head-cover" alt="">
-        <span v-else class="cover-fallback">{{ song.name?.charAt(0) }}</span>
-        <div class="song-head-info">
-          <div class="song-head-name">
+      <!-- Hero -->
+      <div class="song-hero">
+        <img v-if="song.cover" :src="replaceImageSize(song.cover, 96)" class="song-cover" alt="">
+        <span v-else class="song-cover cover-fallback">{{ song.name?.charAt(0) }}</span>
+        <div class="song-meta">
+          <div class="song-name" :title="song.name">
             {{ song.name }}
           </div>
-          <div class="song-head-artist">
-            {{ artistNames(song) }}
+          <div class="song-sub">
+            <span>{{ artistNames(song) }}</span>
+            <span v-if="playlistName" class="sep">·</span>
+            <span v-if="playlistName">来自歌单 · {{ playlistName }}</span>
           </div>
         </div>
       </div>
 
-      <el-tabs v-model="activeTab" class="url-tabs">
-        <el-tab-pane label="服务器代理" name="0">
-          <div class="url-list">
-            <div class="url-item">
-              <span class="url-label">音质</span>
-              <quality-select v-model="quality" />
-            </div>
-            <div class="url-item">
-              <span class="url-label">代理链接</span>
-              <el-input :model-value="proxyUrl" readonly class="copy-field">
-                <template #append>
-                  <el-button type="primary" @click="copyUrl(proxyUrl)">
-                    复制
-                  </el-button>
-                </template>
-              </el-input>
-            </div>
-          </div>
-        </el-tab-pane>
+      <!-- Segmented tabs -->
+      <div class="seg" role="tablist">
+        <button
+          v-for="t in tabs"
+          :key="t.value"
+          class="seg-item"
+          :class="{ active: activeTab === t.value }"
+          @click="activeTab = t.value"
+        >
+          {{ t.label }}
+        </button>
+      </div>
 
-        <el-tab-pane label="直接链接" name="1">
-          <div v-loading="loadingDirectUrls" class="url-list">
-            <div class="url-item">
-              <span class="url-label">音质</span>
-              <quality-select v-model="directQuality" />
+      <!-- 服务器代理 -->
+      <div v-if="activeTab === '0'" class="panel">
+        <p class="hint">
+          播放器请求时，服务器实时获取最新音频地址 · 链接永久有效
+        </p>
+        <div class="field">
+          <span class="field-label">音质</span>
+          <quality-select v-model="quality" />
+        </div>
+        <div class="field">
+          <span class="field-label">代理链接</span>
+          <el-input :model-value="proxyUrl" readonly class="copy-input">
+            <template #append>
+              <el-button type="primary" @click="copyUrl(proxyUrl)">
+                复制
+              </el-button>
+            </template>
+          </el-input>
+        </div>
+      </div>
+
+      <!-- 直接链接 -->
+      <div v-else-if="activeTab === '1'" class="panel">
+        <p class="hint">
+          酷狗直链约 2–4 小时过期 · 更推荐使用服务器代理
+        </p>
+        <div class="field">
+          <span class="field-label">音质</span>
+          <quality-select v-model="directQuality" />
+        </div>
+        <div v-loading="loadingDirectUrls" class="links">
+          <div v-if="directUrls.length" class="group">
+            <div class="group-label">
+              主链接
             </div>
-            <div v-for="(url, index) in directUrls" :key="index" class="url-item">
-              <span class="url-label">链接 {{ index + 1 }}</span>
-              <el-input :model-value="url" readonly class="copy-field">
+            <div v-for="(url, index) in directUrls" :key="index" class="field">
+              <span class="field-label">链接 {{ index + 1 }}</span>
+              <el-input :model-value="url" readonly class="copy-input">
                 <template #append>
                   <el-button type="primary" @click="copyUrl(url)">
                     复制
@@ -53,9 +78,14 @@
                 </template>
               </el-input>
             </div>
-            <div v-for="(url, index) in backupUrls" :key="`backup-${index}`" class="url-item">
-              <span class="url-label">备用 {{ index + 1 }}</span>
-              <el-input :model-value="url" readonly class="copy-field">
+          </div>
+          <div v-if="backupUrls.length" class="group">
+            <div class="group-label">
+              备用链接
+            </div>
+            <div v-for="(url, index) in backupUrls" :key="`b-${index}`" class="field">
+              <span class="field-label">备用 {{ index + 1 }}</span>
+              <el-input :model-value="url" readonly class="copy-input">
                 <template #append>
                   <el-button type="primary" @click="copyUrl(url)">
                     复制
@@ -64,26 +94,32 @@
               </el-input>
             </div>
           </div>
-        </el-tab-pane>
+        </div>
+      </div>
 
-        <el-tab-pane label="XiaoMusic" name="2">
-          <div class="url-list">
-            <el-input :model-value="xiaomusicJson" type="textarea" :rows="10" readonly class="json-area" />
-            <el-button type="primary" style="align-self: flex-end" @click="copyUrl(xiaomusicJson)">
+      <!-- XiaoMusic -->
+      <div v-else-if="activeTab === '2'" class="panel">
+        <div class="json-head">
+          <span class="json-title">XiaoMusic 单曲 JSON</span>
+          <el-button type="primary" round @click="copyUrl(xiaomusicJson)">
+            复制 JSON
+          </el-button>
+        </div>
+        <el-input :model-value="xiaomusicJson" type="textarea" :rows="9" readonly class="json-area" />
+      </div>
+
+      <!-- 原始 JSON -->
+      <div v-else-if="activeTab === '3'" class="panel">
+        <div v-loading="loadingRawJson" class="raw-wrap">
+          <div class="json-head">
+            <span class="json-title">原始 API 响应</span>
+            <el-button type="primary" round @click="copyUrl(rawJson)">
               复制 JSON
             </el-button>
           </div>
-        </el-tab-pane>
-
-        <el-tab-pane label="原始 JSON" name="3">
-          <div v-loading="loadingRawJson" class="url-list">
-            <el-input :model-value="rawJson" type="textarea" :rows="10" readonly class="json-area" />
-            <el-button type="primary" style="align-self: flex-end" @click="copyUrl(rawJson)">
-              复制 JSON
-            </el-button>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
+          <el-input :model-value="rawJson" type="textarea" :rows="9" readonly class="json-area" />
+        </div>
+      </div>
     </template>
     <div v-else class="url-loading">
       加载中...
@@ -100,6 +136,13 @@ import request from '@/utils/request';
 import QualitySelect from './QualitySelect.vue';
 
 const { toClipboard } = useClipboard();
+
+const tabs = [
+  { label: '服务器代理', value: '0' },
+  { label: '直接链接', value: '1' },
+  { label: 'XiaoMusic', value: '2' },
+  { label: '原始 JSON', value: '3' },
+];
 
 const visible = ref(false);
 const quality = ref('high');
@@ -231,86 +274,165 @@ defineExpose({ open });
   font-size: 13px;
 }
 
-.song-header {
+/* Hero */
+.song-hero {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
-.song-head-cover {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
+.song-cover {
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
   object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-1);
 }
 
-.song-head-info {
+.song-meta {
   min-width: 0;
 }
 
-.song-head-name {
+.song-name {
   font-size: 18px;
   font-weight: 700;
   color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.song-head-artist {
+.song-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
   font-size: 13px;
   color: var(--text-3);
-  margin-top: 4px;
+}
+
+.song-sub .sep {
+  color: var(--border-strong);
 }
 
 .cover-fallback {
-  width: 64px;
-  height: 64px;
-  border-radius: 12px;
-  display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 700;
   color: #fff;
   background: var(--accent-grad);
 }
 
-.url-tabs :deep(.el-tabs__item) {
-  font-weight: 600;
+/* Segmented control */
+.seg {
+  display: inline-flex;
+  padding: 4px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 18px;
 }
 
-.url-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.url-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.url-label {
-  font-weight: 500;
+.seg-item {
+  border: none;
+  background: transparent;
   color: var(--text-2);
   font-size: 13px;
-  min-width: 60px;
-  text-align: right;
-  flex-shrink: 0;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.copy-field {
-  flex: 1;
+.seg-item:hover {
+  color: var(--text-1);
 }
 
-.copy-field :deep(input) {
+.seg-item.active {
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px var(--accent-soft);
+}
+
+.panel {
+  padding-top: 2px;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--text-3);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-3);
+}
+
+.copy-input {
+  width: 100%;
+}
+
+.copy-input :deep(input) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+}
+
+.group {
+  margin-bottom: 8px;
+}
+
+.group-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-3);
+  margin: 4px 0 12px;
+}
+
+.json-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.json-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.json-area {
+  width: 100%;
 }
 
 .json-area :deep(textarea) {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-size: 12px;
+}
+
+.raw-wrap {
+  display: flex;
+  flex-direction: column;
 }
 
 .url-loading {

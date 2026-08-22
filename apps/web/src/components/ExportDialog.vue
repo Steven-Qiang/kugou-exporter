@@ -422,7 +422,6 @@ defineExpose({ open });
 .export-option:hover {
   border-color: var(--accent);
   background: var(--accent-soft);
-  transform: translateY(-1px);
 }
 
 .option-badge {
@@ -468,7 +467,7 @@ defineExpose({ open });
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) calc(var(--p) * 1%), rgba(108, 92, 231, 0.12) 0);
+  background: conic-gradient(var(--accent) calc(var(--p) * 1%), rgba(150, 150, 150, 0.14) 0);
   display: flex;
   align-items: center;
   justify-content: center;

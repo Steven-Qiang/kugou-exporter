@@ -384,7 +384,7 @@ onUnmounted(() => {
 .brand-panel {
   position: relative;
   padding: 48px 44px;
-  background: var(--accent-grad);
+  background: linear-gradient(160deg, #1c1d20 0%, #2a241f 100%);
   color: #fff;
   display: flex;
   flex-direction: column;
