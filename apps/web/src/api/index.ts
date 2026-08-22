@@ -15,6 +15,16 @@ export interface KugouAccount {
   updated_at: number;
 }
 
+export interface ExportHistoryItem {
+  id: number;
+  kugouAccountId: number | null;
+  playlistName: string;
+  format: string;
+  count: number;
+  content: string;
+  createdAt: number;
+}
+
 export const authApi = {
   setupStatus: () => request.get<{ needsSetup: boolean }>('/auth/setup/status').then((r) => r.data),
   setup: (username: string, password: string) =>
@@ -35,18 +45,26 @@ export const kugouApi = {
   // 数据接口（服务端直连，前端无需持有酷狗 cookie）
   me: () => request.get('/kugou/me').then((r) => r.data),
   playlist: () => request.get('/kugou/playlist').then((r) => r.data),
-  tracks: (listid: number, page = 1, pagesize = 100) => request.get('/kugou/playlist/tracks', { params: { listid, page, pagesize } }).then((r) => r.data),
-  songUrl: (hash: string, quality: string) => request.get('/kugou/song/url', { params: { hash, quality } }).then((r) => r.data),
+  tracks: (listid: number, page = 1, pagesize = 100) =>
+    request.get('/kugou/playlist/tracks', { params: { listid, page, pagesize } }).then((r) => r.data),
+  songUrl: (hash: string, quality: string) =>
+    request.get('/kugou/song/url', { params: { hash, quality } }).then((r) => r.data),
 };
 
 export const configApi = {
-  get: () => request.get<{ serverUrl: string; settings: { quality: string } }>('/config/get').then((r) => r.data),
-  save: (quality: string) => request.post('/config/save', { quality }).then((r) => r.data),
+  get: () =>
+    request.get<{ serverUrl: string; settings: { quality: string; serverUrl: string } }>('/config/get').then((r) => r.data),
+  save: (payload: { serverUrl?: string; quality?: string }) => request.post('/config/save', payload).then((r) => r.data),
 };
 
 export const historyApi = {
-  list: () => request.get<{ history: any[] }>('/history').then((r) => r.data.history),
-  add: (payload: { kugouAccountId?: number | null; format: string; count: number; content: string }) =>
-    request.post('/history', payload).then((r) => r.data),
+  list: () => request.get<{ history: ExportHistoryItem[] }>('/history').then((r) => r.data.history),
+  add: (payload: {
+    kugouAccountId?: number | null;
+    playlistName: string;
+    format: string;
+    count: number;
+    content: string;
+  }) => request.post('/history', payload).then((r) => r.data),
   remove: (id: number) => request.delete(`/history/${id}`).then((r) => r.data),
 };

@@ -163,16 +163,21 @@ function demoSongUrl(hash: string): SongUrl {
 
 function entries(): Record<string, (params?: Record<string, any>, config?: any) => any> {
   return {
-    '/user/detail': () => demoUser,
-    '/user/detail/vip': () => ({ nickname: demoUser.nickname, vip_type: demoUser.vip_type }),
-    '/user/playlist': () => ({ info: demoPlaylists }),
-    '/playlist/track/all/new': (params) => {
+    // App 会话（多租户）：演示模式下模拟已登录管理员
+    '/auth/me': () => ({ user: { id: 1, username: '演示用户', is_admin: true, created_at: Date.now() } }),
+    // 酷狗账号列表（激活一个演示账号）
+    '/kugou': () => ({ accounts: [{ id: 1, nickname: '演示账号', active: true, created_at: Date.now(), updated_at: Date.now() }] }),
+    //
+    '/kugou/playlist': () => ({ info: demoPlaylists }),
+    '/kugou/playlist/tracks': (params) => {
       const total = demoPlaylists.find((p) => p.listid === Number(params?.listid))?.count ?? 0;
       return demoSongList(Number(params?.listid) || 1, total, Number(params?.page) || 1);
     },
-    '/config/get': () => ({ serverUrl: 'http://127.0.0.1:3000' }),
+    '/kugou/song/url': (params) => demoSongUrl(String(params?.hash || 'demo') + (params?.quality || '')),
+    '/kugou/me': () => demoUser,
+    '/config/get': () => ({ serverUrl: 'http://127.0.0.1:3000', settings: { quality: 'high', serverUrl: 'http://127.0.0.1:3000' } }),
     '/config/save': () => ({ success: true }),
-    '/song/url': (params) => demoSongUrl(String(params?.hash || 'demo') + (params?.quality || '')),
+    '/history': () => ({ history: [] }),
   };
 }
 

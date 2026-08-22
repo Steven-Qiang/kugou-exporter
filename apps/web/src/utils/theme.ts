@@ -19,8 +19,11 @@ export function currentTheme(): Theme {
 }
 
 export function applyTheme(theme: Theme) {
-  document.documentElement.dataset.theme = theme;
-  document.documentElement.style.colorScheme = theme;
+  const el = document.documentElement;
+  el.dataset.theme = theme;
+  // Element Plus 的暗色组件样式挂在 html.dark 下，需同步切换，否则组件 hover 等仍是浅色
+  el.classList.toggle('dark', theme === 'dark');
+  el.style.colorScheme = theme;
   try {
     localStorage.setItem(THEME_KEY, theme);
   } catch {

@@ -56,6 +56,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     kugou_account_id INTEGER,
+    playlist_name TEXT DEFAULT '',
     format TEXT NOT NULL,
     count INTEGER NOT NULL DEFAULT 0,
     content TEXT NOT NULL,

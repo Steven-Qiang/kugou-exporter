@@ -1,61 +1,141 @@
 <template>
-  <div class="accounts">
-    <div class="page-head">
-      <div>
-        <h2>我的酷狗账号</h2>
-        <p>添加并管理你的酷狗账号，导出按账号走</p>
+  <div class="accounts-page">
+    <!-- 顶部栏 -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="app-brand grad-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+        </div>
+        <div class="brand-text">
+          <strong>酷狗歌单导出</strong>
+          <span>KUGOU EXPORTER</span>
+        </div>
       </div>
-      <el-button class="grad-btn" type="primary" @click="openConnect">
-        + 添加酷狗账号
-      </el-button>
-    </div>
+      <div class="topbar-right">
+        <theme-toggle />
+        <el-button text @click="router.push('/playlist')">前往歌单</el-button>
+        <el-button text @click="onLogout">退出登录</el-button>
+      </div>
+    </header>
 
-    <div v-loading="loading" class="list">
-      <div v-for="acct in accounts" :key="acct.id" class="account-card" :class="{ active: acct.active }">
-        <div class="acct-info">
-          <div class="acct-avatar grad-icon">
-            {{ firstNick(acct.nickname) }}
-          </div>
+    <div class="accounts">
+      <!-- 页头 -->
+      <div class="page-head">
+        <div>
+          <h2>我的酷狗账号</h2>
+          <p>{{ accounts.length ? '添加并管理你的酷狗账号，导出按账号走' : '连接你的第一个酷狗账号，即可开始导出' }}</p>
+        </div>
+      </div>
+
+      <!-- 无账号：内嵌连接表单（不需要再点按钮） -->
+      <div v-if="accounts.length === 0" class="connect-inline">
+        <div class="connect-head">
+          <el-avatar :size="42" class="connect-avatar grad-icon">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13" />
+              <circle cx="6" cy="18" r="3" />
+              <circle cx="18" cy="16" r="3" />
+            </svg>
+          </el-avatar>
           <div>
-            <div class="acct-name">
-              {{ acct.nickname || '未命名账号' }}
-              <el-tag v-if="acct.active" size="small" type="success" round>
-                当前
-              </el-tag>
+            <h3>连接酷狗账号</h3>
+            <p>使用手机验证码或扫码登录，连接后即可导出歌单</p>
+          </div>
+        </div>
+
+        <div class="login-tabs">
+          <div class="tab-nav">
+            <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">手机登录</button>
+            <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">扫码登录</button>
+          </div>
+
+          <div class="tab-content">
+            <div v-show="activeTab === 'phone'" class="tab-pane">
+              <div class="form-group">
+                <label>手机号</label>
+                <el-input v-model="phoneForm.phone" placeholder="请输入手机号" size="large" />
+              </div>
+              <div class="form-group">
+                <label>验证码</label>
+                <div class="code-input">
+                  <el-input v-model="phoneForm.code" placeholder="请输入验证码" size="large" />
+                  <el-button :disabled="countdown > 0" size="large" @click="sendCode">
+                    {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
+                  </el-button>
+                </div>
+              </div>
+              <el-button type="primary" size="large" :loading="submitLoading" class="submit-btn grad-btn" @click="handlePhoneLogin">
+                登录并连接
+              </el-button>
             </div>
-            <div class="acct-sub">
-              {{ acct.active ? '正在使用' : '已连接' }}
+
+            <div v-show="activeTab === 'qr'" class="tab-pane qr-pane">
+              <div v-if="qrPending" class="qr-loading">
+                <el-icon class="is-loading" :size="50"><loading-icon /></el-icon>
+                <p>正在生成二维码...</p>
+              </div>
+              <template v-else-if="qrCode">
+                <div class="qr-image"><img :src="qrCode" alt="QR Code"></div>
+                <p class="qr-hint">请使用酷狗音乐APP扫码登录</p>
+                <el-button text type="primary" @click="generateQR">刷新二维码</el-button>
+              </template>
+              <div v-else class="qr-loading">
+                <el-button type="primary" size="large" class="grad-btn" @click="generateQR">生成二维码</el-button>
+              </div>
             </div>
           </div>
         </div>
-        <div class="acct-actions">
-          <el-button v-if="!acct.active" size="small" @click="activate(acct.id)">
-            切换
-          </el-button>
-          <el-button size="small" text @click="openRename(acct)">
-            重命名
-          </el-button>
-          <el-button size="small" text type="danger" @click="remove(acct.id)">
-            删除
-          </el-button>
-        </div>
+
+        <!-- 登录提示 -->
+        <p class="connect-note">
+          连接后，你的歌单会展示在「前往歌单」页面，可一键导出到 XiaoMusic。
+        </p>
       </div>
 
-      <el-empty v-if="!loading && accounts.length === 0" description="还没有酷狗账号，点击右上角添加" />
+      <!-- 有账号：账号网格 -->
+      <div v-else v-loading="loading" class="grid">
+        <div
+          v-for="acct in accounts"
+          :key="acct.id"
+          class="grid-card"
+          :class="{ active: acct.active }"
+        >
+          <div class="grid-top">
+            <div class="grid-avatar">{{ firstNick(acct.nickname) }}</div>
+            <div class="grid-meta">
+              <div class="grid-name-row">
+                <div class="grid-name">{{ acct.nickname || '未命名账号' }}</div>
+                <span v-if="acct.active" class="grid-active">使用中</span>
+              </div>
+              <div class="grid-status">{{ acct.active ? '当前账号' : '已连接' }}</div>
+            </div>
+          </div>
+          <div class="grid-actions">
+            <el-button v-if="!acct.active" size="small" type="primary" plain @click="activate(acct.id)">切换</el-button>
+            <el-button size="small" text @click="openRename(acct)">重命名</el-button>
+            <el-button size="small" text type="danger" @click="remove(acct.id)">删除</el-button>
+          </div>
+        </div>
+
+        <!-- 添加账号卡片 -->
+        <button class="grid-card add-card" @click="openConnect">
+          <span class="add-icon">+</span>
+          <span class="add-label">添加酷狗账号</span>
+        </button>
+      </div>
     </div>
 
-    <!-- 连接酷狗账号：沿用原版酷狗登录（手机 + 扫码 + 账号选择） -->
-    <el-dialog v-model="showConnect" title="连接酷狗账号" width="460px" top="8vh" :close-on-click-modal="false">
+    <!-- 已有账号时，点「添加酷狗账号」才弹此弹窗 -->
+    <el-dialog v-model="showConnect" title="连接酷狗账号" width="460px" top="8vh" :close-on-click-modal="false" class="connect-dialog">
       <div class="login-tabs">
         <div class="tab-nav">
-          <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">
-            手机登录
-          </button>
-          <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">
-            扫码登录
-          </button>
+          <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">手机登录</button>
+          <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">扫码登录</button>
         </div>
-
         <div class="tab-content">
           <div v-show="activeTab === 'phone'" class="tab-pane">
             <div class="form-group">
@@ -71,33 +151,22 @@
                 </el-button>
               </div>
             </div>
-            <el-button type="primary" size="large" :loading="loading" class="submit-btn grad-btn" @click="handlePhoneLogin">
+            <el-button type="primary" size="large" :loading="submitLoading" class="submit-btn grad-btn" @click="handlePhoneLogin">
               登录并连接
             </el-button>
           </div>
-
           <div v-show="activeTab === 'qr'" class="tab-pane qr-pane">
-            <div v-if="loading" class="qr-loading">
-              <el-icon class="is-loading" :size="50">
-                <loading-icon />
-              </el-icon>
+            <div v-if="qrPending" class="qr-loading">
+              <el-icon class="is-loading" :size="50"><loading-icon /></el-icon>
               <p>正在生成二维码...</p>
             </div>
             <template v-else-if="qrCode">
-              <div class="qr-image">
-                <img :src="qrCode" alt="QR Code">
-              </div>
-              <p class="qr-hint">
-                请使用酷狗音乐APP扫码登录
-              </p>
-              <el-button text type="primary" @click="generateQR">
-                刷新二维码
-              </el-button>
+              <div class="qr-image"><img :src="qrCode" alt="QR Code"></div>
+              <p class="qr-hint">请使用酷狗音乐APP扫码登录</p>
+              <el-button text type="primary" @click="generateQR">刷新二维码</el-button>
             </template>
             <div v-else class="qr-loading">
-              <el-button type="primary" size="large" class="grad-btn" @click="generateQR">
-                生成二维码
-              </el-button>
+              <el-button type="primary" size="large" class="grad-btn" @click="generateQR">生成二维码</el-button>
             </div>
           </div>
         </div>
@@ -106,20 +175,11 @@
 
     <el-dialog v-model="showAccountSelect" title="选择账号" width="400px" :close-on-click-modal="false">
       <div class="account-list">
-        <div
-          v-for="account in accountList"
-          :key="account.userid"
-          class="account-item"
-          @click="selectAccount(account.userid)"
-        >
+        <div v-for="account in accountList" :key="account.userid" class="account-item" @click="selectAccount(account.userid)">
           <el-avatar :src="replaceImageSize(account.pic, 100)" :size="50" />
           <div class="account-info">
-            <div class="account-name">
-              {{ account.nickname }}
-            </div>
-            <div class="account-username">
-              {{ account.username }}
-            </div>
+            <div class="account-name">{{ account.nickname }}</div>
+            <div class="account-username">{{ account.username }}</div>
           </div>
         </div>
       </div>
@@ -132,13 +192,25 @@ import type { KugouAccount } from '@/api';
 import type { QRCheckData, QRCreateData, QRKeyData } from '@/types';
 import { Loading as LoadingIcon } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { useRouter } from 'vue-router';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 import { kugouApi } from '@/api';
+import { useAuth } from '@/stores/auth';
 import { replaceImageSize } from '@/utils/image';
 import request from '@/utils/request';
 
+const router = useRouter();
+const { logout } = useAuth();
 const loading = ref(false);
+const qrPending = ref(false);
+const submitLoading = ref(false);
 const accounts = ref<KugouAccount[]>([]);
 const showConnect = ref(false);
+
+async function onLogout() {
+  await logout();
+  router.push('/login');
+}
 
 const activeTab = ref('phone');
 const countdown = ref(0);
@@ -236,7 +308,8 @@ async function handlePhoneLogin() {
     ElMessage.warning('请填写完整信息');
     return;
   }
-  loading.value = true;
+  loading.value = false;
+  submitLoading.value = true;
   try {
     const res = await request.get('/login/cellphone', {
       params: { mobile: phoneForm.phone, code: phoneForm.code },
@@ -249,17 +322,17 @@ async function handlePhoneLogin() {
     if (error.response?.data?.data?.info_list) {
       accountList.value = error.response.data.data.info_list;
       showAccountSelect.value = true;
-      loading.value = false;
+      submitLoading.value = false;
     } else {
       console.error(error);
-      loading.value = false;
+      submitLoading.value = false;
     }
   }
 }
 
 async function selectAccount(userid: number) {
   showAccountSelect.value = false;
-  loading.value = true;
+  submitLoading.value = true;
   try {
     const res = await request.get('/login/cellphone', {
       params: { mobile: phoneForm.phone, code: phoneForm.code, userid },
@@ -268,12 +341,12 @@ async function selectAccount(userid: number) {
     await saveAccount(res);
   } catch (error) {
     console.error(error);
-    loading.value = false;
+    submitLoading.value = false;
   }
 }
 
 async function generateQR() {
-  loading.value = true;
+  qrPending.value = true;
   try {
     const keyRes = await request.get<QRKeyData>('/login/qr/key', {
       params: { timestamp: Date.now() },
@@ -288,7 +361,7 @@ async function generateQR() {
     console.error(error);
     ElMessage.error('生成二维码失败');
   } finally {
-    loading.value = false;
+    qrPending.value = false;
   }
 }
 
@@ -333,17 +406,67 @@ load();
 </script>
 
 <style scoped>
-.accounts {
+.accounts-page {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  height: 100vh;
 }
 
-.page-head {
+.topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  height: 64px;
+  flex-shrink: 0;
+  padding: 0 22px;
+  background: var(--surface);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-brand {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.brand-text strong {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.brand-text span {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--text-3);
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.accounts {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 .page-head h2 {
@@ -358,71 +481,95 @@ load();
   color: var(--text-3);
 }
 
-.list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.account-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
+/* 内嵌连接表单 */
+.connect-inline {
+  max-width: 440px;
+  width: 100%;
+  margin: 8px auto 0;
+  padding: 30px 32px;
+  border-radius: 24px;
   background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-1);
+  animation: rise 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.account-card.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.acct-info {
+.connect-head {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
-.acct-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  font-size: 20px;
-  font-weight: 700;
+.connect-avatar {
+  border-radius: 14px;
 }
 
-.acct-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
+.connect-head h3 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
   color: var(--text-1);
 }
 
-.acct-sub {
-  font-size: 12px;
+.connect-head p {
+  margin: 4px 0 0;
+  font-size: 13px;
   color: var(--text-3);
-  margin-top: 2px;
 }
 
-.acct-actions {
-  display: flex;
-  gap: 4px;
+.connect-note {
+  margin: 18px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  line-height: 1.6;
 }
 
 /* 原版酷狗登录样式 */
+/* 连接弹窗：固定高度、禁用滚动条，避免切换登录方式时高度跳动/出现滚动条 */
+.connect-dialog .el-dialog__body {
+  max-height: none !important;
+  overflow: hidden !important;
+  padding-bottom: 8px;
+}
+
+.connect-dialog .el-dialog {
+  overflow: hidden;
+}
+
 .login-tabs {
-  padding: 6px 4px;
+  padding: 2px 0;
+}
+
+/* 固定内容区高度：手机 / 扫码两个 pane 高度一致，切换时弹窗高度不变 */
+.tab-content {
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-content .tab-pane {
+  flex: 1;
 }
 
 .tab-nav {
   display: flex;
   gap: 8px;
-  margin-bottom: 24px;
+  margin-bottom: 22px;
   background: var(--surface-muted);
   padding: 4px;
   border-radius: 8px;
@@ -448,17 +595,15 @@ load();
 }
 
 .tab-pane {
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -493,7 +638,7 @@ load();
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 220px;
+  min-height: 240px;
 }
 
 .qr-loading {
@@ -526,6 +671,169 @@ load();
   font-size: 14px;
 }
 
+/* 账号网格 */
+.grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.grid-card {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--surface);
+  text-align: left;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.grid-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.grid-card:hover::before {
+  opacity: 1;
+}
+
+.grid-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px -20px var(--accent-soft);
+}
+
+.grid-card.active {
+  border-color: var(--accent);
+  background: linear-gradient(160deg, var(--surface), var(--accent-soft));
+}
+
+.grid-top {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.grid-avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--accent-grad);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 10px 24px -10px rgba(233, 106, 60, 0.5);
+}
+
+.grid-active {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1.6;
+  color: #fff;
+  background: #12b76a;
+  white-space: nowrap;
+}
+
+.grid-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.grid-meta {
+  min-width: 0;
+}
+
+.grid-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.grid-status {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 3px;
+}
+
+.grid-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+/* 添加账号卡片 */
+.add-card {
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1.5px dashed var(--border-strong);
+  background: transparent;
+  cursor: pointer;
+  min-height: 120px;
+}
+
+.add-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: none;
+}
+
+.add-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  transition: all 0.2s ease;
+}
+
+.add-card:hover .add-icon {
+  color: #fff;
+  background: var(--accent);
+}
+
+.add-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
 .account-list {
   display: flex;
   flex-direction: column;
@@ -538,9 +846,9 @@ load();
   gap: 15px;
   padding: 15px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .account-item:hover {
@@ -554,7 +862,7 @@ load();
 
 .account-name {
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-1);
   margin-bottom: 4px;
 }
@@ -562,5 +870,15 @@ load();
 .account-username {
   font-size: 13px;
   color: var(--text-3);
+}
+
+@media (max-width: 720px) {
+  .accounts {
+    padding: 16px;
+  }
+
+  .connect-inline {
+    padding: 24px 20px;
+  }
 }
 </style>

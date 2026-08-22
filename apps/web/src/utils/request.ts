@@ -10,7 +10,7 @@ const request = axios.create({
   withCredentials: true,
 });
 
-const ignoreErrorDialogUrl = ['/login/cellphone', '/user/detail'];
+const ignoreErrorDialogUrl = ['/login/cellphone', '/login', '/auth/login'];
 
 /**
  * Demo-mode adapter: returns locally mocked data so the UI can be previewed
@@ -37,10 +37,11 @@ const demoAdapter: AxiosAdapter = async (config) => {
 };
 
 /**
- * Login/auth endpoints always hit the real backend, even in demo mode, so the
- * login page is never hijacked by the demo adapter.
+ * Endpoints that always hit the real backend — never mocked — even in demo mode.
+ * 演示模式下，认证与登录相关请求必须走真实后端（否则登录页/守卫会被演示数据劫持）；
+ * 数据接口（/kugou/*、/config、/history、/auth/me）在演示模式下由 mock 拦截，便于无需登录预览 UI。
  */
-const REAL_PATHS = ['/login', '/captcha', '/auth', '/kugou', '/config', '/history'];
+const REAL_PATHS = ['/auth/setup', '/auth/login', '/auth/logout', '/captcha', '/login'];
 
 request.defaults.adapter = async (config) => {
   const pathname = (config.url || '').split('?')[0];
