@@ -40,7 +40,7 @@ const demoAdapter: AxiosAdapter = async (config) => {
  * Login/auth endpoints always hit the real backend, even in demo mode, so the
  * login page is never hijacked by the demo adapter.
  */
-const REAL_PATHS = ['/login', '/captcha'];
+const REAL_PATHS = ['/login', '/captcha', '/auth', '/kugou', '/config', '/history'];
 
 request.defaults.adapter = async (config) => {
   const pathname = (config.url || '').split('?')[0];
@@ -62,7 +62,11 @@ request.interceptors.response.use(
       router.push('/login');
       ElMessage.error('请先登录');
     } else {
-      if (!ignoreErrorDialogUrl.includes(error.config?.url || ''))
+      // 401 是预期内的鉴权状态（守卫检查 /auth/me、登录失败等），由调用方处理，不弹通用错误
+      const isAuth = error.config?.url?.startsWith('/auth/');
+      // /kugou 数据接口失败由组件处理（显示友好空态/提示），不弹通用错误
+      const isKugou = error.config?.url?.startsWith('/kugou/');
+      if (!isAuth && !isKugou && !ignoreErrorDialogUrl.includes(error.config?.url || ''))
         ElMessage.error(error.response?.data?.msg || '请求失败');
     }
     return Promise.reject(error);

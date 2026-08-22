@@ -65,7 +65,6 @@ const decode = require('safe-decode-uri-component');
 const { cookieToJson, randomString, getGuid, calculateMid } = require('./util/util');
 const { cryptoMd5 } = require('./util/crypto');
 const { createRequest } = require('./util/request');
-const cache = require('./util/apicache').middleware;
 
 ${moduleImports}
 
@@ -126,7 +125,6 @@ async function consturctServer(moduleDefs) {
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
   app.use('/docs', express.static(path.join(__dirname, 'docs')));
-  app.use(cache('2 minutes', (_, res) => res.statusCode === 200));
 
   const moduleDefinitions = moduleDefs || staticModuleDefs;
 

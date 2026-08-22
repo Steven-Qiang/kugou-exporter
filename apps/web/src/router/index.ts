@@ -1,48 +1,41 @@
-import type { UserInfo } from '@/types';
 import { createRouter, createWebHashHistory } from 'vue-router';
-import request from '@/utils/request';
-
-let cachedUserInfo: UserInfo | null = null;
-
-export function getCachedUserInfo() {
-  return cachedUserInfo;
-}
+import { useAuth } from '@/stores/auth';
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
+    { path: '/setup', name: 'Setup', component: () => import('@/views/SetupView.vue') },
+    { path: '/login', name: 'Login', component: () => import('@/views/LoginView.vue') },
     {
       path: '/',
-      redirect: '/playlist',
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: () => import('@/views/LoginView.vue'),
-    },
-    {
-      path: '/playlist',
-      name: 'Playlist',
-      component: () => import('@/views/PlaylistView.vue'),
+      component: () => import('@/layouts/AppShell.vue'),
+      children: [
+        { path: '', redirect: '/accounts' },
+        { path: 'accounts', name: 'Accounts', component: () => import('@/views/AccountsView.vue') },
+        { path: 'playlist', name: 'Playlist', component: () => import('@/views/PlaylistView.vue') },
+      ],
     },
   ],
 });
 
-router.beforeEach(async (to, from, next) => {
-  if (to.path !== '/login') {
-    try {
-      const res = await request.get<UserInfo>('/user/detail');
-      cachedUserInfo = res.data;
-      // 把当前账号的登录态存到服务端（多账号：按 userid 归档，设为激活账号）
-      request.post('/config/save', { userid: res.data.userid }).catch(() => {});
-      next();
-    } catch {
-      cachedUserInfo = null;
-      next('/login');
-    }
-  } else {
-    next();
+router.beforeEach(async (to) => {
+  const { loadSetupStatus, fetchMe, user } = useAuth();
+
+  // 首次启动：没有任何用户 -> 引导创建管理员
+  const needs = await loadSetupStatus();
+  if (needs) {
+    return to.name === 'Setup' ? true : { name: 'Setup' };
   }
+  // 已初始化，不再显示 setup
+  if (to.name === 'Setup') return { name: 'Accounts' };
+
+  if (to.name === 'Login' && user.value) return { name: 'Accounts' };
+
+  if (!user.value) {
+    const ok = await fetchMe();
+    if (!ok && to.name !== 'Login') return { name: 'Login' };
+  }
+  return true;
 });
 
 export default router;
