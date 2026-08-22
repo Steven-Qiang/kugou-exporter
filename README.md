@@ -1,4 +1,4 @@
-# 酷狗音乐歌单导出工具
+# 酷狗歌单一键导出
 
 [![GitHub stars](https://img.shields.io/github/stars/Steven-Qiang/kugou-exporter?style=flat-square)](https://github.com/Steven-Qiang/kugou-exporter/stargazers)
 [![GitHub license](https://img.shields.io/github/license/Steven-Qiang/kugou-exporter?style=flat-square)](https://github.com/Steven-Qiang/kugou-exporter/blob/main/LICENSE)
@@ -6,7 +6,7 @@
 
 kugou-exporter
 
-将酷狗音乐歌单导出为通用JSON格式，兼容 xiaomusic（小爱音箱）等播放器
+一键导出酷狗歌单，轻松同步到小爱音箱等播放器
 
 [功能特性](#功能特性) • [快速开始](#快速开始) • [使用说明](#使用说明) • [开发指南](#开发指南)
 
@@ -14,13 +14,14 @@ kugou-exporter
 
 ## 功能特性
 
-- 📱 手机验证码登录
-- 📷 二维码扫码登录
-- 📋 获取用户歌单列表
-- 🔍 查看歌单详情
+- ⚡ 一键导出酷狗歌单，导入 XiaoMusic / 小爱音箱等播放器
+- 📱 手机验证码登录 & 二维码扫码登录
+- 📦 多格式导出：XiaoMusic / JSON / CSV
 - 🔗 单曲链接获取（支持多音质）
-- 🔄 代理获取播放链接，实时获取最新播放链接
-- 📦 导出为 XiaoMusic/JSON/CSV 格式
+- 🔄 内建代理服务，实时获取最新播放链接，永久有效
+- 🎨 深浅色主题切换
+- 📱 响应式界面，手机 / 平板 / 电脑
+- 🧾 导出历史记录
 
 ### 导出格式
 

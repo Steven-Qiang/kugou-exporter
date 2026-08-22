@@ -22,16 +22,16 @@
           </div>
           <div>
             <h1 class="grad-text">
-              酷狗音乐导出
+              酷狗歌单一键导出
             </h1>
             <p class="brand-sub">
-              KUGOU MUSIC EXPORTER
+              KUGOU EXPORTER
             </p>
           </div>
         </div>
 
         <p class="brand-desc">
-          将酷狗音乐歌单导出为通用 JSON 格式，一键同步到 XiaoMusic（小爱音箱）等播放器。
+          轻松同步到小爱音箱等播放器，随时畅听。
         </p>
 
         <ul class="feature-list">

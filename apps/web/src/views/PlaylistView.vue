@@ -20,7 +20,7 @@
           </svg>
         </div>
         <div class="brand-text">
-          <strong>酷狗音乐导出</strong>
+          <strong>酷狗歌单一键导出</strong>
           <span>KUGOU EXPORTER</span>
         </div>
         <button v-if="inDemo" class="demo-badge" title="退出演示模式" @click="exitDemo">
@@ -147,8 +147,8 @@
                 class="song-table"
                 :header-cell-style="{ background: 'var(--surface-muted)' }"
               >
-                <el-table-column type="index" label="#" width="52" align="center" />
-                <el-table-column label="歌曲" min-width="220">
+                <el-table-column type="index" label="#" :width="isMobile ? 44 : 52" align="center" />
+                <el-table-column label="歌曲" :min-width="isMobile ? 150 : 220">
                   <template #default="{ row }">
                     <div class="song-cell">
                       <img v-if="row.cover" :src="replaceImageSize(row.cover, 64)" class="song-cover" alt="">
@@ -159,18 +159,24 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column label="歌手" min-width="120" show-overflow-tooltip>
+                <el-table-column label="歌手" :min-width="isMobile ? 96 : 120" show-overflow-tooltip>
                   <template #default="{ row }">
                     <span class="cell-ellipsis">{{ artistNames(row) }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="albuminfo.name" label="专辑" min-width="140" show-overflow-tooltip />
-                <el-table-column label="时长" width="90" align="center">
+                <el-table-column
+                  v-if="!isMobile"
+                  prop="albuminfo.name"
+                  label="专辑"
+                  min-width="140"
+                  show-overflow-tooltip
+                />
+                <el-table-column v-if="!isMobile" label="时长" width="90" align="center">
                   <template #default="{ row }">
                     {{ formatDuration(row.timelen) }}
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="110" align="center">
+                <el-table-column label="操作" :width="isMobile ? 96 : 110" align="center">
                   <template #default="{ row }">
                     <el-button size="small" type="primary" link @click="openSong(row)">
                       获取链接
@@ -214,6 +220,13 @@ import request from '@/utils/request';
 
 const router = useRouter();
 const inDemo = isDemo();
+
+// Responsive: compact the song table on phones so the primary columns and the
+// key "获取链接" action stay visible without horizontal scrolling.
+const isMobile = ref(false);
+function updateIsMobile() {
+  isMobile.value = window.innerWidth <= 760;
+}
 
 const userInfo = ref<any>(null);
 const loading = ref(false);
@@ -338,7 +351,13 @@ function exitDemo() {
 }
 
 onMounted(() => {
+  updateIsMobile();
+  window.addEventListener('resize', updateIsMobile);
   fetchPlaylists();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateIsMobile);
 });
 </script>
 
@@ -601,7 +620,10 @@ onMounted(() => {
   background-size: cover;
   background-position: center;
   box-shadow: var(--shadow-1);
-  min-height: 200px;
+  /* Consistent height regardless of whether a playlist has an intro line:
+     reserve enough for the tallest content so switching playlists never
+     shifts the banner (206px -> 235px jump without this). */
+  min-height: 236px;
 }
 
 .banner-overlay {
@@ -713,7 +735,8 @@ onMounted(() => {
 
 .song-table-wrap {
   border-radius: 16px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
   border: 1px solid var(--border);
   background: var(--surface);
 }

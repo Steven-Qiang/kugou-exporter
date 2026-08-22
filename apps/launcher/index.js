@@ -15,8 +15,8 @@ function showBanner() {
     )
   );
   console.log(chalk.gray('━'.repeat(60)));
-  console.log(chalk.yellow(`  🎵 酷狗音乐导出工具 v${version}`));
-  console.log(chalk.gray('  支持导出不同格式，兼容XiaoMusic，内置代理服务，实时获取最新播放链接'));
+  console.log(chalk.yellow(`  🎵 酷狗歌单一键导出 v${version}`));
+  console.log(chalk.gray('  一键导出酷狗歌单，兼容XiaoMusic，内置代理服务，实时获取最新播放链接'));
   console.log();
   console.log(chalk.gray('  👤 作者: ') + chalk.white('Steven-Qiang'));
   console.log(chalk.gray('  🔗 仓库: ') + chalk.blue('github.com/Steven-Qiang/kugou-exporter'));
