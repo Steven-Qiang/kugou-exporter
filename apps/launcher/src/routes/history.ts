@@ -1,6 +1,6 @@
 import type { Express } from 'express';
-import { listHistory, addHistory, deleteHistory } from '../store/history';
 import { requireAuth } from '../middleware/session';
+import { addHistory, deleteHistory, listHistory } from '../store/history';
 
 interface HistoryItem {
   id: number;

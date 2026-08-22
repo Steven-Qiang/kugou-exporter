@@ -1,19 +1,9 @@
 <template>
   <div class="playlist-page">
-    <!-- Top bar -->
     <header class="topbar">
       <div class="topbar-left">
         <div class="app-brand grad-icon">
-          <svg
-            viewBox="0 0 24 24"
-            width="22"
-            height="22"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M9 18V5l12-2v13" />
             <circle cx="6" cy="18" r="3" />
             <circle cx="18" cy="16" r="3" />
@@ -32,14 +22,14 @@
         <theme-toggle />
         <a class="icon-link" href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank" title="GitHub">
           <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
-            <path
-              d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
-            />
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
           </svg>
         </a>
         <el-dropdown v-if="activeAccount" trigger="click" @command="handleAccountCommand">
           <div class="user-chip">
-            <el-avatar :size="32" class="acct-avatar-grad">{{ activeAccount.nickname?.charAt(0) || '♪' }}</el-avatar>
+            <el-avatar :size="32" class="acct-avatar-grad">
+              {{ activeAccount.nickname?.charAt(0) || '♪' }}
+            </el-avatar>
             <span class="user-name">{{ activeAccount.nickname || '当前账号' }}</span>
             <el-icon class="dropdown-arrow">
               <arrow-down />
@@ -47,19 +37,31 @@
           </div>
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item v-if="appUser" divided :command="{ type: 'accounts' }">
-                <span>管理酷狗账号</span>
+              <el-dropdown-item v-if="appUser" :command="{ type: 'accounts' }">
+                <span class="menu-item">
+                  <span class="menu-ico">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4" /><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.87" /></svg>
+                  </span>
+                  <span>管理酷狗账号</span>
+                </span>
               </el-dropdown-item>
-              <el-dropdown-item v-for="acct in accountList" :key="acct.id" :command="{ type: 'switch', id: acct.id }"
+              <el-dropdown-item
+                v-for="acct in accountList" :key="acct.id" :command="{ type: 'switch', id: acct.id }"
                 :disabled="String(acct.id) === String(activeAccount?.id)"
               >
-                <span class="account-item">
-                  <span>{{ acct.nickname || `账号 ${acct.id}` }}</span>
-                  <el-tag v-if="String(acct.id) === String(activeAccount?.id)" size="small" type="success">当前</el-tag>
+                <span class="menu-item">
+                  <span class="menu-avatar">{{ acct.nickname?.charAt(0) || '♪' }}</span>
+                  <span class="menu-name">{{ acct.nickname || `账号 ${acct.id}` }}</span>
+                  <el-tag v-if="String(acct.id) === String(activeAccount?.id)" size="small" type="success" round>当前</el-tag>
                 </span>
               </el-dropdown-item>
               <el-dropdown-item divided :command="{ type: 'logout' }">
-                <span class="danger-text">退出登录</span>
+                <span class="menu-item menu-logout">
+                  <span class="menu-ico">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
+                  </span>
+                  <span>退出登录</span>
+                </span>
               </el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -68,19 +70,12 @@
     </header>
 
     <div class="app-body">
-      <!-- Sidebar -->
       <aside class="sidebar">
         <div class="sidebar-search">
           <el-input v-model="searchText" placeholder="搜索歌单" clearable :prefix-icon="Search" />
         </div>
         <div v-loading="loading" class="playlist-list">
-          <div
-            v-for="item in filteredPlaylists"
-            :key="item.listid"
-            class="playlist-card"
-            :class="{ active: selectedPlaylist?.listid === item.listid }"
-            @click="selectPlaylist(item)"
-          >
+          <div v-for="item in filteredPlaylists" :key="item.listid" class="playlist-card" :class="{ active: selectedPlaylist?.listid === item.listid }" @click="selectPlaylist(item)">
             <div class="playlist-cover">
               <img v-if="item.pic || item.create_user_pic" :src="coverSrc(item)" alt="">
               <span v-else class="cover-fallback">{{ item.name?.charAt(0) }}</span>
@@ -102,17 +97,12 @@
         </div>
       </aside>
 
-      <!-- Main -->
       <main class="main">
         <template v-if="selectedPlaylist">
           <div class="banner" :style="bannerStyle">
             <div class="banner-overlay" />
             <div class="banner-cover">
-              <img
-                v-if="selectedPlaylist.pic || selectedPlaylist.create_user_pic"
-                :src="coverSrc(selectedPlaylist)"
-                alt=""
-              >
+              <img v-if="selectedPlaylist.pic || selectedPlaylist.create_user_pic" :src="coverSrc(selectedPlaylist)" alt="">
               <span v-else class="cover-fallback lg">{{ selectedPlaylist.name?.charAt(0) }}</span>
             </div>
             <div class="banner-info">
@@ -143,22 +133,11 @@
 
           <div class="song-section">
             <div class="song-toolbar">
-              <el-input
-                v-model="songSearch"
-                placeholder="搜索歌名 / 歌手 / 专辑"
-                clearable
-                :prefix-icon="Search"
-                class="song-search"
-              />
+              <el-input v-model="songSearch" placeholder="搜索歌名 / 歌手 / 专辑" clearable :prefix-icon="Search" class="song-search" />
               <span class="song-total">{{ filteredSongs.length }} / {{ songs.length }} 首</span>
             </div>
-
             <div v-loading="loadingSongs" class="song-table-wrap">
-              <el-table
-                :data="filteredSongs"
-                class="song-table"
-                :header-cell-style="{ background: 'var(--surface-muted)' }"
-              >
+              <el-table :data="filteredSongs" class="song-table" :header-cell-style="{ background: 'var(--surface-muted)' }">
                 <el-table-column type="index" label="#" :width="isMobile ? 44 : 52" align="center" />
                 <el-table-column label="歌曲" :min-width="isMobile ? 150 : 220" show-overflow-tooltip>
                   <template #default="{ row }">
@@ -176,13 +155,7 @@
                     <span class="cell-ellipsis">{{ artistNames(row) }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column
-                  v-if="!isMobile"
-                  prop="albuminfo.name"
-                  label="专辑"
-                  min-width="140"
-                  show-overflow-tooltip
-                />
+                <el-table-column v-if="!isMobile" prop="albuminfo.name" label="专辑" min-width="140" show-overflow-tooltip />
                 <el-table-column v-if="!isMobile" label="时长" width="90" align="center">
                   <template #default="{ row }">
                     {{ formatDuration(row.timelen) }}
@@ -218,14 +191,15 @@
 </template>
 
 <script setup lang="ts">
+import type { KugouAccount } from '@/api';
 import type { Playlist, Song } from '@/types';
 import { ArrowDown, Download, Refresh, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { kugouApi } from '@/api';
 import ExportDialog from '@/components/ExportDialog.vue';
 import SongUrlDialog from '@/components/SongUrlDialog.vue';
 import ThemeToggle from '@/components/ThemeToggle.vue';
-import { kugouApi, type KugouAccount } from '@/api';
 import { useAuth } from '@/stores/auth';
 import { formatDuration, totalDurationSeconds, uniqueArtists } from '@/utils/format';
 import { replaceImageSize } from '@/utils/image';
@@ -236,7 +210,6 @@ const router = useRouter();
 const { user: appUser, logout } = useAuth();
 const inDemo = isDemo();
 
-// Responsive: compact the song table on phones.
 const isMobile = ref(false);
 function updateIsMobile() {
   isMobile.value = window.innerWidth <= 760;
@@ -270,10 +243,7 @@ const filteredSongs = computed(() => {
   });
 });
 
-const stats = computed(() => ({
-  duration: durationLabel(),
-  artists: uniqueArtists(songs.value),
-}));
+const stats = computed(() => ({ duration: durationLabel(), artists: uniqueArtists(songs.value) }));
 
 function durationLabel(): string {
   const total = totalDurationSeconds(songs.value);
@@ -286,8 +256,7 @@ function durationLabel(): string {
 const bannerStyle = computed(() => {
   const pic = selectedPlaylist.value?.pic || selectedPlaylist.value?.create_user_pic || '';
   if (!pic) return {};
-  const url = replaceImageSize(pic, 600);
-  return { backgroundImage: `url(${url})` };
+  return { backgroundImage: `url(${replaceImageSize(pic, 600)})` };
 });
 
 function coverSrc(p: Playlist): string {
@@ -322,7 +291,6 @@ async function fetchPlaylists() {
     if (favorite) selectPlaylist(favorite);
     else if (playlists.value.length) selectPlaylist(playlists.value[0]);
   } catch (e: any) {
-    // 尚未绑定/激活酷狗账号时：显示友好空态，不弹红色错误
     playlists.value = [];
     if (e?.response?.status !== 401 && e?.response?.data?.code !== 401) {
       ElMessage.error('加载歌单失败');
@@ -337,12 +305,10 @@ async function selectPlaylist(playlist: Playlist) {
   songs.value = [];
   songSearch.value = '';
   loadingSongs.value = true;
-
   try {
     const allSongs: Song[] = [];
     let currentPage = 1;
     let totalCount = 0;
-
     while (true) {
       const res = await request.get<{ info: Song[]; count: number }>('/kugou/playlist/tracks', {
         params: { listid: playlist.listid, page: currentPage, pagesize: 100 },
@@ -352,7 +318,6 @@ async function selectPlaylist(playlist: Playlist) {
       if (allSongs.length >= totalCount) break;
       currentPage++;
     }
-
     songs.value = [...allSongs].sort((a, b) => a.fsort - b.fsort);
   } catch (error) {
     console.error(error);
@@ -410,7 +375,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-  .playlist-page {
+.playlist-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -530,13 +495,59 @@ onUnmounted(() => {
   font-size: 13px;
 }
 
-.account-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+:deep(.el-dropdown-menu__item) {
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin: 0 6px;
 }
 
-.danger-text {
+:deep(.el-dropdown-menu__item:not(.is-disabled):hover) {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.menu-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.menu-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.menu-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: var(--accent-grad);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.menu-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-logout {
   color: #f56c6c;
 }
 
@@ -843,12 +854,10 @@ onUnmounted(() => {
   .sidebar {
     width: 220px;
   }
-
   .banner-cover {
     width: 110px;
     height: 110px;
   }
-
   .banner-info h1 {
     font-size: 22px;
   }
@@ -858,18 +867,15 @@ onUnmounted(() => {
   .topbar {
     padding: 0 12px;
   }
-
   .brand-text span,
   .demo-badge,
   .icon-link,
   .user-name {
     display: none;
   }
-
   .app-body {
     flex-direction: column;
   }
-
   .sidebar {
     width: 100%;
     height: auto;
@@ -878,35 +884,28 @@ onUnmounted(() => {
     border-bottom: 1px solid var(--border);
     padding: 12px;
   }
-
   .sidebar-search {
     margin-bottom: 10px;
   }
-
   .playlist-list {
     flex-direction: row;
     overflow-x: auto;
     padding-bottom: 6px;
   }
-
   .playlist-card {
     min-width: 150px;
     flex-shrink: 0;
   }
-
   .main {
     padding: 14px;
   }
-
   .banner {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .banner-actions {
     flex-wrap: wrap;
   }
-
   .song-table-wrap {
     overflow-x: auto;
   }

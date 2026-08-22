@@ -198,13 +198,13 @@
 </template>
 
 <script setup lang="ts">
-import type { Song, XiaomusicPlaylist, XiaomusicSong } from '@/types';
 import type { ExportHistoryItem } from '@/api';
+import type { Song, XiaomusicPlaylist, XiaomusicSong } from '@/types';
 import { Clock, CopyDocument, Download } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { ElMessage } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
-import { configApi, kugouApi, historyApi } from '@/api';
+import { configApi, historyApi, kugouApi } from '@/api';
 import { buildCsvContent, buildProxyUrl, csvFilename, downloadText, jsonFilename } from '@/utils/export';
 import request from '@/utils/request';
 import QualitySelect from './QualitySelect.vue';
@@ -231,6 +231,7 @@ const exportDetail = ref({
 const exportResult = ref('');
 const currentExportType = ref<'xiaomusic' | 'json' | 'csv'>('xiaomusic');
 const activeAccountId = ref<number | null>(null);
+const activeKgUserid = ref<string>('');
 const history = ref<ExportHistoryItem[]>([]);
 
 const dialogTitle = computed(() => {
@@ -281,13 +282,15 @@ async function loadConfig() {
     const cfg = await configApi.get();
     form.value.serverUrl = cfg.serverUrl;
     if (cfg.settings?.quality) form.value.quality = cfg.settings.quality;
-    // 激活账号 id（用于代理链接 uid）
+    // 激活账号 id（用于历史记录）+ 酷狗 userid（用于代理链接 uid）
     try {
       const accounts = await kugouApi.list();
       const active = accounts.find((a) => a.active);
       activeAccountId.value = active ? active.id : null;
+      activeKgUserid.value = active?.kgUserid || '';
     } catch {
       activeAccountId.value = null;
+      activeKgUserid.value = '';
     }
     // VIP 信息
     try {
@@ -311,7 +314,7 @@ function showXiaomusicConfig() {
 }
 
 function proxyUrlFor(song: Song): string {
-  return buildProxyUrl(form.value.serverUrl, song, form.value.quality, activeAccountId.value ?? undefined);
+  return buildProxyUrl(form.value.serverUrl, song, form.value.quality, activeKgUserid.value || undefined);
 }
 
 async function confirmExport() {

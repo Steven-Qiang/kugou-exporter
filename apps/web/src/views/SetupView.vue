@@ -26,8 +26,12 @@
             </svg>
           </div>
           <div>
-            <h1 class="grad-text">酷狗歌单导出</h1>
-            <p class="brand-sub">KUGOU EXPORTER</p>
+            <h1 class="grad-text">
+              酷狗歌单导出
+            </h1>
+            <p class="brand-sub">
+              KUGOU EXPORTER
+            </p>
           </div>
         </div>
 
@@ -90,8 +94,12 @@
                 </svg>
               </div>
             </div>
-            <h1 class="welcome-title">欢迎使用</h1>
-            <p class="typewriter">{{ typedText }}<span class="caret" /></p>
+            <h1 class="welcome-title">
+              欢迎使用
+            </h1>
+            <p class="typewriter">
+              {{ typedText }}<span class="caret" />
+            </p>
             <p class="welcome-desc">
               连接你的酷狗账号，把喜欢的歌单一键带到小爱音箱等播放器。
             </p>
@@ -103,8 +111,12 @@
 
           <!-- 亮点 -->
           <div v-else-if="step === 1" class="panel panel-features">
-            <h2 class="panel-title">它会为你做什么</h2>
-            <p class="panel-sub">一次连接，随时随地畅听你的歌单</p>
+            <h2 class="panel-title">
+              它会为你做什么
+            </h2>
+            <p class="panel-sub">
+              一次连接，随时随地畅听你的歌单
+            </p>
             <div class="feat-grid">
               <div v-for="(f, i) in features" :key="f.title" class="feat-card enterup" :style="{ animationDelay: `${i * 0.1}s` }">
                 <span class="feat-icon">
@@ -129,8 +141,12 @@
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
               </div>
               <div>
-                <h2 class="panel-title">创建你的账号</h2>
-                <p class="panel-sub">用管理员账号登录，管理你的酷狗账号</p>
+                <h2 class="panel-title">
+                  创建你的账号
+                </h2>
+                <p class="panel-sub">
+                  用管理员账号登录，管理你的酷狗账号
+                </p>
               </div>
             </div>
 
@@ -151,9 +167,9 @@
 </template>
 
 <script setup lang="ts">
+import { Lock, User } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
-import { User, Lock } from '@element-plus/icons-vue';
-import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
+import { onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuth } from '@/stores/auth';
 
@@ -276,8 +292,13 @@ onUnmounted(() => {
 }
 
 @keyframes drift {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  50% { transform: translate(36px, -28px) scale(1.1); }
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(36px, -28px) scale(1.1);
+  }
 }
 
 .grid {
@@ -300,16 +321,51 @@ onUnmounted(() => {
   animation: floatNote 9s ease-in-out infinite;
 }
 
-.n1 { top: 18%; left: 12%; animation-delay: 0s; }
-.n2 { top: 62%; left: 8%; font-size: 24px; animation-delay: -2s; }
-.n3 { top: 26%; right: 14%; font-size: 26px; animation-delay: -4s; }
-.n4 { top: 72%; right: 10%; font-size: 34px; animation-delay: -6s; }
-.n5 { top: 44%; left: 78%; animation-delay: -3s; }
-.n6 { top: 50%; left: 40%; font-size: 22px; animation-delay: -7s; }
+.n1 {
+  top: 18%;
+  left: 12%;
+  animation-delay: 0s;
+}
+.n2 {
+  top: 62%;
+  left: 8%;
+  font-size: 24px;
+  animation-delay: -2s;
+}
+.n3 {
+  top: 26%;
+  right: 14%;
+  font-size: 26px;
+  animation-delay: -4s;
+}
+.n4 {
+  top: 72%;
+  right: 10%;
+  font-size: 34px;
+  animation-delay: -6s;
+}
+.n5 {
+  top: 44%;
+  left: 78%;
+  animation-delay: -3s;
+}
+.n6 {
+  top: 50%;
+  left: 40%;
+  font-size: 22px;
+  animation-delay: -7s;
+}
 
 @keyframes floatNote {
-  0%, 100% { transform: translateY(0) rotate(0); opacity: 0; }
-  50% { transform: translateY(-26px) rotate(12deg); opacity: 0.55; }
+  0%,
+  100% {
+    transform: translateY(0) rotate(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-26px) rotate(12deg);
+    opacity: 0.55;
+  }
 }
 
 /* Shell */
@@ -464,8 +520,13 @@ onUnmounted(() => {
 }
 
 @keyframes eqBounce {
-  0%, 100% { height: 18%; }
-  50% { height: 100%; }
+  0%,
+  100% {
+    height: 18%;
+  }
+  50% {
+    height: 100%;
+  }
 }
 
 .brand-footer {
@@ -587,13 +648,25 @@ onUnmounted(() => {
 }
 
 @keyframes panelEnter {
-  from { opacity: 0; transform: translateX(24px); }
-  to { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes upIn {
-  from { opacity: 0; transform: translateY(18px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 欢迎 */
@@ -623,8 +696,15 @@ onUnmounted(() => {
 }
 
 @keyframes pulse {
-  0%, 100% { transform: scale(0.85); opacity: 0.6; }
-  50% { transform: scale(1.1); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
 }
 
 .logo {
@@ -667,8 +747,13 @@ onUnmounted(() => {
 }
 
 @keyframes blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
 
 .welcome-desc {

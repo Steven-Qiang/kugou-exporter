@@ -114,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { User, Lock } from '@element-plus/icons-vue';
+import { Lock, User } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';

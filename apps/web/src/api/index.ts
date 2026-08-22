@@ -9,6 +9,7 @@ export interface SessionUser {
 
 export interface KugouAccount {
   id: number;
+  kgUserid: string;
   nickname: string;
   active: boolean;
   created_at: number;

@@ -17,8 +17,12 @@
       </div>
       <div class="topbar-right">
         <theme-toggle />
-        <el-button text @click="router.push('/playlist')">前往歌单</el-button>
-        <el-button text @click="onLogout">退出登录</el-button>
+        <el-button text @click="router.push('/playlist')">
+          前往歌单
+        </el-button>
+        <el-button text @click="onLogout">
+          退出登录
+        </el-button>
       </div>
     </header>
 
@@ -49,8 +53,12 @@
 
         <div class="login-tabs">
           <div class="tab-nav">
-            <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">手机登录</button>
-            <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">扫码登录</button>
+            <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">
+              手机登录
+            </button>
+            <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">
+              扫码登录
+            </button>
           </div>
 
           <div class="tab-content">
@@ -75,16 +83,26 @@
 
             <div v-show="activeTab === 'qr'" class="tab-pane qr-pane">
               <div v-if="qrPending" class="qr-loading">
-                <el-icon class="is-loading" :size="50"><loading-icon /></el-icon>
+                <el-icon class="is-loading" :size="50">
+                  <loading-icon />
+                </el-icon>
                 <p>正在生成二维码...</p>
               </div>
               <template v-else-if="qrCode">
-                <div class="qr-image"><img :src="qrCode" alt="QR Code"></div>
-                <p class="qr-hint">请使用酷狗音乐APP扫码登录</p>
-                <el-button text type="primary" @click="generateQR">刷新二维码</el-button>
+                <div class="qr-image">
+                  <img :src="qrCode" alt="QR Code">
+                </div>
+                <p class="qr-hint">
+                  请使用酷狗音乐APP扫码登录
+                </p>
+                <el-button text type="primary" @click="generateQR">
+                  刷新二维码
+                </el-button>
               </template>
               <div v-else class="qr-loading">
-                <el-button type="primary" size="large" class="grad-btn" @click="generateQR">生成二维码</el-button>
+                <el-button type="primary" size="large" class="grad-btn" @click="generateQR">
+                  生成二维码
+                </el-button>
               </div>
             </div>
           </div>
@@ -105,19 +123,31 @@
           :class="{ active: acct.active }"
         >
           <div class="grid-top">
-            <div class="grid-avatar">{{ firstNick(acct.nickname) }}</div>
+            <div class="grid-avatar">
+              {{ firstNick(acct.nickname) }}
+            </div>
             <div class="grid-meta">
               <div class="grid-name-row">
-                <div class="grid-name">{{ acct.nickname || '未命名账号' }}</div>
+                <div class="grid-name">
+                  {{ acct.nickname || '未命名账号' }}
+                </div>
                 <span v-if="acct.active" class="grid-active">使用中</span>
               </div>
-              <div class="grid-status">{{ acct.active ? '当前账号' : '已连接' }}</div>
+              <div class="grid-status">
+                {{ acct.active ? '当前账号' : '已连接' }}
+              </div>
             </div>
           </div>
           <div class="grid-actions">
-            <el-button v-if="!acct.active" size="small" type="primary" plain @click="activate(acct.id)">切换</el-button>
-            <el-button size="small" text @click="openRename(acct)">重命名</el-button>
-            <el-button size="small" text type="danger" @click="remove(acct.id)">删除</el-button>
+            <el-button v-if="!acct.active" size="small" type="primary" plain @click="activate(acct.id)">
+              切换
+            </el-button>
+            <el-button size="small" text @click="openRename(acct)">
+              重命名
+            </el-button>
+            <el-button size="small" text type="danger" @click="remove(acct.id)">
+              删除
+            </el-button>
           </div>
         </div>
 
@@ -133,8 +163,12 @@
     <el-dialog v-model="showConnect" title="连接酷狗账号" width="460px" top="8vh" :close-on-click-modal="false" class="connect-dialog">
       <div class="login-tabs">
         <div class="tab-nav">
-          <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">手机登录</button>
-          <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">扫码登录</button>
+          <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">
+            手机登录
+          </button>
+          <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">
+            扫码登录
+          </button>
         </div>
         <div class="tab-content">
           <div v-show="activeTab === 'phone'" class="tab-pane">
@@ -157,16 +191,26 @@
           </div>
           <div v-show="activeTab === 'qr'" class="tab-pane qr-pane">
             <div v-if="qrPending" class="qr-loading">
-              <el-icon class="is-loading" :size="50"><loading-icon /></el-icon>
+              <el-icon class="is-loading" :size="50">
+                <loading-icon />
+              </el-icon>
               <p>正在生成二维码...</p>
             </div>
             <template v-else-if="qrCode">
-              <div class="qr-image"><img :src="qrCode" alt="QR Code"></div>
-              <p class="qr-hint">请使用酷狗音乐APP扫码登录</p>
-              <el-button text type="primary" @click="generateQR">刷新二维码</el-button>
+              <div class="qr-image">
+                <img :src="qrCode" alt="QR Code">
+              </div>
+              <p class="qr-hint">
+                请使用酷狗音乐APP扫码登录
+              </p>
+              <el-button text type="primary" @click="generateQR">
+                刷新二维码
+              </el-button>
             </template>
             <div v-else class="qr-loading">
-              <el-button type="primary" size="large" class="grad-btn" @click="generateQR">生成二维码</el-button>
+              <el-button type="primary" size="large" class="grad-btn" @click="generateQR">
+                生成二维码
+              </el-button>
             </div>
           </div>
         </div>
@@ -178,8 +222,12 @@
         <div v-for="account in accountList" :key="account.userid" class="account-item" @click="selectAccount(account.userid)">
           <el-avatar :src="replaceImageSize(account.pic, 100)" :size="50" />
           <div class="account-info">
-            <div class="account-name">{{ account.nickname }}</div>
-            <div class="account-username">{{ account.username }}</div>
+            <div class="account-name">
+              {{ account.nickname }}
+            </div>
+            <div class="account-username">
+              {{ account.username }}
+            </div>
           </div>
         </div>
       </div>
@@ -193,8 +241,8 @@ import type { QRCheckData, QRCreateData, QRKeyData } from '@/types';
 import { Loading as LoadingIcon } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { useRouter } from 'vue-router';
-import ThemeToggle from '@/components/ThemeToggle.vue';
 import { kugouApi } from '@/api';
+import ThemeToggle from '@/components/ThemeToggle.vue';
 import { useAuth } from '@/stores/auth';
 import { replaceImageSize } from '@/utils/image';
 import request from '@/utils/request';

@@ -13,7 +13,7 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  const { needsSetup, loadSetupStatus, fetchMe, user } = useAuth();
+  const { loadSetupStatus, fetchMe, user } = useAuth();
   // 首次启动：没有任何用户 -> 引导创建管理员
   const needs = await loadSetupStatus();
   if (needs) {

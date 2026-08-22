@@ -158,12 +158,12 @@ const error = ref('');
 const song = ref<Song | null>(null);
 const playlistName = ref('');
 const serverUrl = ref('');
-const activeAccountId = ref<number | null>(null);
+const activeKgUserid = ref<string>('');
 
 const proxyUrl = computed(() => {
   if (!song.value || !serverUrl.value) return '';
   const base = serverUrl.value.replace(/\/+$/, '');
-  const uid = activeAccountId.value ? `&uid=${activeAccountId.value}` : '';
+  const uid = activeKgUserid.value ? `&uid=${encodeURIComponent(activeKgUserid.value)}` : '';
   return `${base}/proxy/song/url?hash=${song.value.hash}&quality=${quality.value}${uid}`;
 });
 
@@ -199,9 +199,9 @@ async function open(s: Song, name: string) {
     try {
       const accounts = await kugouApi.list();
       const active = accounts.find((a) => a.active);
-      activeAccountId.value = active ? active.id : null;
+      activeKgUserid.value = active?.kgUserid || '';
     } catch {
-      activeAccountId.value = null;
+      activeKgUserid.value = '';
     }
     playlistName.value = name;
     song.value = s;
@@ -326,6 +326,7 @@ defineExpose({ open });
 }
 
 .cover-fallback {
+  display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
