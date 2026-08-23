@@ -17,7 +17,7 @@
 
 | 层             | 技术                                                                                                                                |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| 包管理         | pnpm workspace（`packageManager: pnpm@10.29.3`，Node.js >= 22.5，实际开发/运行 24.x）                                               |
+| 包管理         | pnpm workspace（`packageManager: pnpm@10.29.3`，Node.js >= 24（原生 `node:sqlite`），实际开发/运行 24.x）                           |
 | 启动器（后端） | TypeScript + tsdown（打包为 CJS `dist/index.cjs`）+ Express（来自 `kugoumusicapi` 依赖）+ `node:sqlite`/`DatabaseSync`              |
 | 存储           | SQLite（WAL）：`apps/launcher/data/kugou.db`，路径可用 `KUGOU_DB_PATH` 覆盖；Docker 下 `/app/data/kugou.db`                         |
 | 前端           | Vue 3 `<script setup lang="ts">` + Vite 7 + TypeScript + Element Plus 2 + vue-router 5（hash 模式）+ axios + dayjs + vue-clipboard3 |
