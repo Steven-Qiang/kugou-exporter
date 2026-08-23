@@ -13,12 +13,13 @@ function coverPlaceholder(seed: number, label = '♪'): string {
   const h = Math.abs(seed * 61) % 360;
   const h2 = (h + 45) % 360;
   const txt = label.slice(0, 1);
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>`
-    + `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>`
-    + `<stop offset='0' stop-color='hsl(${h},72%,58%)'/>`
-    + `<stop offset='1' stop-color='hsl(${h2},72%,46%)'/></linearGradient></defs>`
-    + `<rect width='300' height='300' fill='url(#g)'/>`
-    + `<text x='150' y='192' font-family='Arial, sans-serif' font-size='130' fill='rgba(255,255,255,0.92)' text-anchor='middle'>${txt}</text></svg>`;
+  const svg
+    = `<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'>`
+      + `<defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>`
+      + `<stop offset='0' stop-color='hsl(${h},72%,58%)'/>`
+      + `<stop offset='1' stop-color='hsl(${h2},72%,46%)'/></linearGradient></defs>`
+      + `<rect width='300' height='300' fill='url(#g)'/>`
+      + `<text x='150' y='192' font-family='Arial, sans-serif' font-size='130' fill='rgba(255,255,255,0.92)' text-anchor='middle'>${txt}</text></svg>`;
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 }
 
@@ -165,8 +166,18 @@ function entries(): Record<string, (params?: Record<string, any>, config?: any) 
   return {
     // App 会话（多租户）：演示模式下模拟已登录管理员
     '/auth/me': () => ({ user: { id: 1, username: '演示用户', is_admin: true, created_at: Date.now() } }),
+    '/auth/setup/status': () => ({ needsSetup: false }),
+    '/auth/users': () => ({
+      users: [
+        { id: 1, username: '演示用户', is_admin: true, created_at: Date.now() },
+        { id: 2, username: '演示子用户', is_admin: false, created_at: Date.now() },
+      ],
+    }),
+    '/auth/change-password': () => ({ success: true }),
     // 酷狗账号列表（激活一个演示账号）
-    '/kugou': () => ({ accounts: [{ id: 1, nickname: '演示账号', active: true, created_at: Date.now(), updated_at: Date.now() }] }),
+    '/kugou': () => ({
+      accounts: [{ id: 1, nickname: '演示账号', active: true, created_at: Date.now(), updated_at: Date.now() }],
+    }),
     //
     '/kugou/playlist': () => ({ info: demoPlaylists }),
     '/kugou/playlist/tracks': (params) => {
@@ -175,9 +186,20 @@ function entries(): Record<string, (params?: Record<string, any>, config?: any) 
     },
     '/kugou/song/url': (params) => demoSongUrl(String(params?.hash || 'demo') + (params?.quality || '')),
     '/kugou/me': () => demoUser,
-    '/config/get': () => ({ serverUrl: 'http://127.0.0.1:3000', settings: { quality: 'high', serverUrl: 'http://127.0.0.1:3000' } }),
+    '/config/get': () => ({
+      serverUrl: 'http://127.0.0.1:3000',
+      settings: { quality: 'high', serverUrl: 'http://127.0.0.1:3000' },
+    }),
     '/config/save': () => ({ success: true }),
     '/history': () => ({ history: [] }),
+    // ---- 酷狗登录相关（演示模式下必须本地 mock，绝不请求真实接口）----
+    '/login/cellphone': () => ({ status: 1, data: { nickname: '演示账号', nickname2: '演示账号', userid: 1 } }),
+    '/captcha/sent': () => ({ success: true }),
+    '/login/qr/key': () => ({ qrcode: 'demoqrcode', qrcode_img: '' }),
+    '/login/qr/create': () => ({ url: '', base64: '' }),
+    '/login/qr/check': () => ({ status: 4, nickname: '演示账号', userid: 1 }),
+    // 演示模式下退出应用账号也走 mock
+    '/auth/logout': () => ({ success: true }),
   };
 }
 

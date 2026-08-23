@@ -48,3 +48,17 @@ export function countUsers(): number {
   const row = db.prepare('SELECT COUNT(*) AS c FROM users').get() as { c: number };
   return row.c;
 }
+
+export function listUsers(): PublicUser[] {
+  const rows = db.prepare('SELECT * FROM users ORDER BY id ASC').all() as unknown as User[];
+  return rows.map(publicUser);
+}
+
+export function updatePassword(userId: number, password: string): void {
+  const { hash, salt } = hashPassword(password);
+  db.prepare('UPDATE users SET password_hash=?, salt=? WHERE id=?').run(hash, salt, userId);
+}
+
+export function deleteUser(userId: number): void {
+  db.prepare('DELETE FROM users WHERE id=?').run(userId);
+}

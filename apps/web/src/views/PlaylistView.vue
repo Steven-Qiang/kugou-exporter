@@ -1,81 +1,18 @@
 <template>
   <div class="playlist-page">
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="app-brand grad-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18V5l12-2v13" />
-            <circle cx="6" cy="18" r="3" />
-            <circle cx="18" cy="16" r="3" />
-          </svg>
-        </div>
-        <div class="brand-text">
-          <strong>酷狗歌单导出</strong>
-          <span>KUGOU EXPORTER</span>
-        </div>
-        <button v-if="inDemo" class="demo-badge" title="退出演示模式" @click="exitDemo">
-          演示模式 · 退出
-        </button>
-      </div>
-
-      <div class="topbar-right">
-        <theme-toggle />
-        <a class="icon-link" href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank" title="GitHub">
-          <svg viewBox="0 0 16 16" width="18" height="18" fill="currentColor">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
-          </svg>
-        </a>
-        <el-dropdown v-if="activeAccount" trigger="click" @command="handleAccountCommand">
-          <div class="user-chip">
-            <el-avatar :size="32" class="acct-avatar-grad">
-              {{ activeAccount.nickname?.charAt(0) || '♪' }}
-            </el-avatar>
-            <span class="user-name">{{ activeAccount.nickname || '当前账号' }}</span>
-            <el-icon class="dropdown-arrow">
-              <arrow-down />
-            </el-icon>
-          </div>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item v-if="appUser" :command="{ type: 'accounts' }">
-                <span class="menu-item">
-                  <span class="menu-ico">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4" /><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2M16 3.13a4 4 0 0 1 0 7.75M21 21v-2a4 4 0 0 0-3-3.87" /></svg>
-                  </span>
-                  <span>管理酷狗账号</span>
-                </span>
-              </el-dropdown-item>
-              <el-dropdown-item
-                v-for="acct in accountList" :key="acct.id" :command="{ type: 'switch', id: acct.id }"
-                :disabled="String(acct.id) === String(activeAccount?.id)"
-              >
-                <span class="menu-item">
-                  <span class="menu-avatar">{{ acct.nickname?.charAt(0) || '♪' }}</span>
-                  <span class="menu-name">{{ acct.nickname || `账号 ${acct.id}` }}</span>
-                  <el-tag v-if="String(acct.id) === String(activeAccount?.id)" size="small" type="success" round>当前</el-tag>
-                </span>
-              </el-dropdown-item>
-              <el-dropdown-item divided :command="{ type: 'logout' }">
-                <span class="menu-item menu-logout">
-                  <span class="menu-ico">
-                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" /></svg>
-                  </span>
-                  <span>退出登录</span>
-                </span>
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-      </div>
-    </header>
-
     <div class="app-body">
       <aside class="sidebar">
         <div class="sidebar-search">
           <el-input v-model="searchText" placeholder="搜索歌单" clearable :prefix-icon="Search" />
         </div>
         <div v-loading="loading" class="playlist-list">
-          <div v-for="item in filteredPlaylists" :key="item.listid" class="playlist-card" :class="{ active: selectedPlaylist?.listid === item.listid }" @click="selectPlaylist(item)">
+          <div
+            v-for="item in filteredPlaylists"
+            :key="item.listid"
+            class="playlist-card"
+            :class="{ active: selectedPlaylist?.listid === item.listid }"
+            @click="selectPlaylist(item)"
+          >
             <div class="playlist-cover">
               <img v-if="item.pic || item.create_user_pic" :src="coverSrc(item)" alt="">
               <span v-else class="cover-fallback">{{ item.name?.charAt(0) }}</span>
@@ -98,11 +35,51 @@
       </aside>
 
       <main class="main">
+        <div class="page-toolbar">
+          <span class="toolbar-label">当前账号</span>
+          <el-dropdown v-if="activeAccount" trigger="click" @command="handleAccountCommand">
+            <div class="toolbar-chip">
+              <el-avatar :size="26" class="chip-avatar">
+                {{ activeAccount.nickname?.charAt(0) || '♪' }}
+              </el-avatar>
+              <span class="chip-name">{{ activeAccount.nickname || '当前账号' }}</span>
+              <el-icon class="chip-arrow">
+                <arrow-down />
+              </el-icon>
+            </div>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item command="accounts">
+                  <span class="menu-item">管理酷狗账号</span>
+                </el-dropdown-item>
+                <el-dropdown-item
+                  v-for="acct in accountList"
+                  :key="acct.id"
+                  :command="{ type: 'switch', id: acct.id }"
+                  :disabled="String(acct.id) === String(activeAccount?.id)"
+                >
+                  <span class="menu-item-menu">
+                    <span class="menu-avatar">{{ acct.nickname?.charAt(0) || '♪' }}</span>
+                    <span class="menu-name">{{ acct.nickname || `账号 ${acct.id}` }}</span>
+                    <el-tag v-if="String(acct.id) === String(activeAccount?.id)" size="small" type="success" round>
+                      当前
+                    </el-tag>
+                  </span>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </div>
+
         <template v-if="selectedPlaylist">
           <div class="banner" :style="bannerStyle">
             <div class="banner-overlay" />
             <div class="banner-cover">
-              <img v-if="selectedPlaylist.pic || selectedPlaylist.create_user_pic" :src="coverSrc(selectedPlaylist)" alt="">
+              <img
+                v-if="selectedPlaylist.pic || selectedPlaylist.create_user_pic"
+                :src="coverSrc(selectedPlaylist)"
+                alt=""
+              >
               <span v-else class="cover-fallback lg">{{ selectedPlaylist.name?.charAt(0) }}</span>
             </div>
             <div class="banner-info">
@@ -133,11 +110,21 @@
 
           <div class="song-section">
             <div class="song-toolbar">
-              <el-input v-model="songSearch" placeholder="搜索歌名 / 歌手 / 专辑" clearable :prefix-icon="Search" class="song-search" />
+              <el-input
+                v-model="songSearch"
+                placeholder="搜索歌名 / 歌手 / 专辑"
+                clearable
+                :prefix-icon="Search"
+                class="song-search"
+              />
               <span class="song-total">{{ filteredSongs.length }} / {{ songs.length }} 首</span>
             </div>
             <div v-loading="loadingSongs" class="song-table-wrap">
-              <el-table :data="filteredSongs" class="song-table" :header-cell-style="{ background: 'var(--surface-muted)' }">
+              <el-table
+                :data="filteredSongs"
+                class="song-table"
+                :header-cell-style="{ background: 'var(--surface-muted)' }"
+              >
                 <el-table-column type="index" label="#" :width="isMobile ? 44 : 52" align="center" />
                 <el-table-column label="歌曲" :min-width="isMobile ? 150 : 220" show-overflow-tooltip>
                   <template #default="{ row }">
@@ -155,7 +142,13 @@
                     <span class="cell-ellipsis">{{ artistNames(row) }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column v-if="!isMobile" prop="albuminfo.name" label="专辑" min-width="140" show-overflow-tooltip />
+                <el-table-column
+                  v-if="!isMobile"
+                  prop="albuminfo.name"
+                  label="专辑"
+                  min-width="140"
+                  show-overflow-tooltip
+                />
                 <el-table-column v-if="!isMobile" label="时长" width="90" align="center">
                   <template #default="{ row }">
                     {{ formatDuration(row.timelen) }}
@@ -175,7 +168,12 @@
             </div>
           </div>
         </template>
-        <el-empty v-else class="main-empty" :description="hasAccount ? '左侧选择歌单开始浏览' : '尚未绑定酷狗账号'" :image-size="120">
+        <el-empty
+          v-else
+          class="main-empty"
+          :description="hasAccount ? '左侧选择歌单开始浏览' : '尚未绑定酷狗账号'"
+          :image-size="120"
+        >
           <template #description>
             <p class="muted">
               {{ hasAccount ? '选择左侧歌单，查看歌曲并一键导出' : '请先到账号管理页添加并激活你的酷狗账号' }}
@@ -199,16 +197,11 @@ import { useRouter } from 'vue-router';
 import { kugouApi } from '@/api';
 import ExportDialog from '@/components/ExportDialog.vue';
 import SongUrlDialog from '@/components/SongUrlDialog.vue';
-import ThemeToggle from '@/components/ThemeToggle.vue';
-import { useAuth } from '@/stores/auth';
 import { formatDuration, totalDurationSeconds, uniqueArtists } from '@/utils/format';
 import { replaceImageSize } from '@/utils/image';
-import { disableDemo, isDemo } from '@/utils/mock';
 import request from '@/utils/request';
 
 const router = useRouter();
-const { user: appUser, logout } = useAuth();
-const inDemo = isDemo();
 
 const isMobile = ref(false);
 function updateIsMobile() {
@@ -282,6 +275,10 @@ async function loadAccounts() {
 }
 
 async function fetchPlaylists() {
+  // 切换账号/进入页面时先清空旧数据，避免加载期间短暂显示上一个账号的歌单（“错误显示别的数据”）
+  playlists.value = [];
+  selectedPlaylist.value = null;
+  songs.value = [];
   loading.value = true;
   try {
     await loadAccounts();
@@ -292,6 +289,8 @@ async function fetchPlaylists() {
     else if (playlists.value.length) selectPlaylist(playlists.value[0]);
   } catch (e: any) {
     playlists.value = [];
+    selectedPlaylist.value = null;
+    songs.value = [];
     if (e?.response?.status !== 401 && e?.response?.data?.code !== 401) {
       ElMessage.error('加载歌单失败');
     }
@@ -309,14 +308,22 @@ async function selectPlaylist(playlist: Playlist) {
     const allSongs: Song[] = [];
     let currentPage = 1;
     let totalCount = 0;
-    while (true) {
+    let emptyStreak = 0;
+    // 安全上限：酷狗可能对超页请求返回空 info 但 count 不变，需防死循环。
+    const MAX_PAGES = 500;
+    while (currentPage <= MAX_PAGES) {
       const res = await request.get<{ info: Song[]; count: number }>('/kugou/playlist/tracks', {
         params: { listid: playlist.listid, page: currentPage, pagesize: 100 },
       });
-      allSongs.push(...(res.data.info || []));
+      const pageSongs = res.data.info || [];
+      allSongs.push(...pageSongs);
       totalCount = res.data.count;
+      if (pageSongs.length === 0) emptyStreak += 1;
+      else emptyStreak = 0;
+      // 连续 2 页为空：说明已取尽（或 count 虚高），安全退出避免死循环
+      if (emptyStreak >= 2) break;
       if (allSongs.length >= totalCount) break;
-      currentPage++;
+      currentPage += 1;
     }
     songs.value = [...allSongs].sort((a, b) => a.fsort - b.fsort);
   } catch (error) {
@@ -339,28 +346,20 @@ function openSong(song: Song) {
   songUrlDialogRef.value?.open(song, selectedPlaylist.value?.name || '');
 }
 
-async function handleAccountCommand(command: { type: string; id?: number }) {
-  if (command.type === 'switch' && command.id) {
+async function handleAccountCommand(command: string | { type: string; id?: number }) {
+  const type = typeof command === 'string' ? command : command?.type;
+  if (type === 'switch' && typeof command === 'object' && command.id) {
     try {
       await kugouApi.activate(command.id);
       ElMessage.success('已切换账号');
-      location.reload();
+      await fetchPlaylists();
     } catch (error) {
       console.error(error);
       ElMessage.error('切换账号失败');
     }
-  } else if (command.type === 'accounts') {
+  } else if (type === 'accounts') {
     router.push('/accounts');
-  } else if (command.type === 'logout') {
-    await logout();
-    router.push('/login');
   }
-}
-
-function exitDemo() {
-  disableDemo();
-  ElMessage.success('已退出演示模式');
-  router.push('/login');
 }
 
 onMounted(() => {
@@ -375,103 +374,31 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.playlist-page {
-  height: 100vh;
+  .playlist-page {
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.topbar {
-  height: 64px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 22px;
-  background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-bottom: 1px solid var(--border);
-}
-
-.topbar-left {
+/* 内容区顶部：当前酷狗账号切换 */
+.page-toolbar {
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 16px;
 }
 
-.app-brand {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.brand-text strong {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.brand-text span {
-  font-size: 10px;
-  letter-spacing: 1.5px;
+.toolbar-label {
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-3);
 }
 
-.demo-badge {
-  margin-left: 8px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-  border-radius: 20px;
-  font-family: inherit;
-  line-height: 1.4;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.demo-badge:hover {
-  background: var(--accent);
-  color: #fff;
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.icon-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-2);
-  transition: all 0.18s ease;
-}
-
-.icon-link:hover {
-  color: var(--accent);
-  background: var(--surface-hover);
-}
-
-.user-chip {
+.toolbar-chip {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 12px 5px 6px;
+  padding: 4px 12px 4px 5px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
@@ -479,18 +406,28 @@ onUnmounted(() => {
   transition: all 0.18s ease;
 }
 
-.user-chip:hover {
+.toolbar-chip:hover {
   border-color: var(--accent);
   background: var(--surface-hover);
 }
 
-.acct-avatar-grad {
+.chip-avatar {
   background: var(--accent-grad);
   color: #fff;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
-.dropdown-arrow {
+.chip-name {
+  font-size: 13px;
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chip-arrow {
   color: var(--text-3);
   font-size: 13px;
 }
@@ -510,20 +447,15 @@ onUnmounted(() => {
 .menu-item {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
-.menu-ico {
+.menu-item-menu {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  flex-shrink: 0;
+  gap: 10px;
+  min-width: 0;
 }
 
 .menu-avatar {
@@ -542,19 +474,6 @@ onUnmounted(() => {
 
 .menu-name {
   max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.menu-logout {
-  color: #f56c6c;
-}
-
-.user-name {
-  font-size: 13px;
-  font-weight: 600;
-  max-width: 120px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

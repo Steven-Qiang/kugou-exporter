@@ -212,6 +212,7 @@ async function open(s: Song, name: string) {
 
 async function fetchDirectUrls() {
   if (!song.value) return;
+  error.value = '';
   loadingDirectUrls.value = true;
   try {
     const urlRes = await request.get<SongUrl>('/kugou/song/url', {
@@ -229,6 +230,7 @@ async function fetchDirectUrls() {
 
 async function fetchRawJson() {
   if (!song.value) return;
+  error.value = '';
   loadingRawJson.value = true;
   try {
     const urlRes = await request.get<SongUrl>('/kugou/song/url', {
@@ -261,6 +263,7 @@ function handleClose() {
 }
 
 watch(activeTab, (val) => {
+  error.value = ''; // 切换 tab 时清掉上一次的错误残留
   if (val === '1' && song.value && directUrls.value.length === 0) fetchDirectUrls();
   if (val === '3' && song.value && !rawJson.value) fetchRawJson();
 });

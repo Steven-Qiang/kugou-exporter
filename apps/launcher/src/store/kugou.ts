@@ -45,15 +45,21 @@ export function publicKugouAccount(acct: KugouAccount): PublicKugouAccount {
 }
 
 export function listKugouAccounts(userId: number): KugouAccount[] {
-  return db.prepare('SELECT * FROM kugou_accounts WHERE user_id=? ORDER BY active DESC, id DESC').all(userId) as unknown as KugouAccount[];
+  return db
+    .prepare('SELECT * FROM kugou_accounts WHERE user_id=? ORDER BY active DESC, id DESC')
+    .all(userId) as unknown as KugouAccount[];
 }
 
 export function getActiveKugouAccount(userId: number): KugouAccount | undefined {
-  return db.prepare('SELECT * FROM kugou_accounts WHERE user_id=? AND active=1').get(userId) as unknown as KugouAccount | undefined;
+  return db.prepare('SELECT * FROM kugou_accounts WHERE user_id=? AND active=1').get(userId) as unknown as
+    | KugouAccount
+    | undefined;
 }
 
 export function getKugouAccountOwned(id: number, userId: number): KugouAccount | undefined {
-  return db.prepare('SELECT * FROM kugou_accounts WHERE id=? AND user_id=?').get(id, userId) as unknown as KugouAccount | undefined;
+  return db.prepare('SELECT * FROM kugou_accounts WHERE id=? AND user_id=?').get(id, userId) as unknown as
+    | KugouAccount
+    | undefined;
 }
 
 export function addKugouAccount(
@@ -67,7 +73,9 @@ export function addKugouAccount(
   if (active) db.prepare('UPDATE kugou_accounts SET active=0 WHERE user_id=?').run(userId);
   const kgUserid = String(cookies.userid || '');
   const info = db
-    .prepare('INSERT INTO kugou_accounts(user_id, kg_userid, nickname, cookies_json, active, created_at, updated_at) VALUES (?,?,?,?,?,?,?)')
+    .prepare(
+      'INSERT INTO kugou_accounts(user_id, kg_userid, nickname, cookies_json, active, created_at, updated_at) VALUES (?,?,?,?,?,?,?)'
+    )
     .run(userId, kgUserid, nickname, JSON.stringify(cookies || {}), active, now, now);
   return db.prepare('SELECT * FROM kugou_accounts WHERE id=?').get(info.lastInsertRowid) as unknown as KugouAccount;
 }
@@ -105,7 +113,12 @@ export function setActiveKugouAccount(id: number, userId: number): void {
 }
 
 export function updateKugouAccountNickname(id: number, userId: number, nickname: string): void {
-  db.prepare('UPDATE kugou_accounts SET nickname=?, updated_at=? WHERE id=? AND user_id=?').run(nickname, Date.now(), id, userId);
+  db.prepare('UPDATE kugou_accounts SET nickname=?, updated_at=? WHERE id=? AND user_id=?').run(
+    nickname,
+    Date.now(),
+    id,
+    userId
+  );
 }
 
 export function deleteKugouAccount(id: number, userId: number): void {
@@ -133,11 +146,17 @@ export function getKugouCookiesByKgUserid(kgUserid: string): Record<string, stri
 
 /** 系统里第一个账号的 cookie（无 uid 时的默认兜底；兼容旧账号/旧链接） */
 export function getFirstKugouCookies(): { id: number; cookies: Record<string, string> } | null {
-  const acct = db
-    .prepare('SELECT * FROM kugou_accounts ORDER BY id ASC LIMIT 1')
-    .get() as unknown as KugouAccount | undefined;
+  const acct = db.prepare('SELECT * FROM kugou_accounts ORDER BY id ASC LIMIT 1').get() as unknown as
+    | KugouAccount
+    | undefined;
   if (!acct) return null;
   return { id: acct.id, cookies: parseCookies(acct.cookies_json) };
+}
+
+/** 全系统酷狗账号总数（用于判断是否可安全兜底到“唯一账号”） */
+export function countKugouAccounts(): number {
+  const row = db.prepare('SELECT COUNT(*) AS c FROM kugou_accounts').get() as { c: number };
+  return row.c;
 }
 
 export function getActiveKugouCookies(userId: number): Record<string, string> {

@@ -1,31 +1,5 @@
 <template>
   <div class="accounts-page">
-    <!-- 顶部栏 -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <div class="app-brand grad-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 18V5l12-2v13" />
-            <circle cx="6" cy="18" r="3" />
-            <circle cx="18" cy="16" r="3" />
-          </svg>
-        </div>
-        <div class="brand-text">
-          <strong>酷狗歌单导出</strong>
-          <span>KUGOU EXPORTER</span>
-        </div>
-      </div>
-      <div class="topbar-right">
-        <theme-toggle />
-        <el-button text @click="router.push('/playlist')">
-          前往歌单
-        </el-button>
-        <el-button text @click="onLogout">
-          退出登录
-        </el-button>
-      </div>
-    </header>
-
     <div class="accounts">
       <!-- 页头 -->
       <div class="page-head">
@@ -35,11 +9,30 @@
         </div>
       </div>
 
-      <!-- 无账号：内嵌连接表单（不需要再点按钮） -->
-      <div v-if="accounts.length === 0" class="connect-inline">
+      <!-- 演示模式提示 -->
+      <div v-if="demo" class="demo-banner">
+        <span class="demo-dot">&#9672;</span>
+        <span>
+          当前为
+          <b>演示模式</b>
+          ，展示的是演示账号，不会连接你的真实酷狗账号。退出演示模式后即可添加真实账号。
+        </span>
+      </div>
+
+      <!-- 无账号（仅在确已加载且为空时）：内嵌连接表单，避免先闪“连接卡片” -->
+      <div v-if="loaded && accounts.length === 0" class="connect-inline">
         <div class="connect-head">
           <el-avatar :size="42" class="connect-avatar grad-icon">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="22"
+              height="22"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M9 18V5l12-2v13" />
               <circle cx="6" cy="18" r="3" />
               <circle cx="18" cy="16" r="3" />
@@ -76,7 +69,13 @@
                   </el-button>
                 </div>
               </div>
-              <el-button type="primary" size="large" :loading="submitLoading" class="submit-btn grad-btn" @click="handlePhoneLogin">
+              <el-button
+                type="primary"
+                size="large"
+                :loading="submitLoading"
+                class="submit-btn grad-btn"
+                @click="handlePhoneLogin"
+              >
                 登录并连接
               </el-button>
             </div>
@@ -110,18 +109,13 @@
 
         <!-- 登录提示 -->
         <p class="connect-note">
-          连接后，你的歌单会展示在「前往歌单」页面，可一键导出到 XiaoMusic。
+          连接后，你的歌单会展示在「歌单」页面，可一键导出到 XiaoMusic。
         </p>
       </div>
 
       <!-- 有账号：账号网格 -->
       <div v-else v-loading="loading" class="grid">
-        <div
-          v-for="acct in accounts"
-          :key="acct.id"
-          class="grid-card"
-          :class="{ active: acct.active }"
-        >
+        <div v-for="acct in accounts" :key="acct.id" class="grid-card" :class="{ active: acct.active }">
           <div class="grid-top">
             <div class="grid-avatar">
               {{ firstNick(acct.nickname) }}
@@ -160,7 +154,14 @@
     </div>
 
     <!-- 已有账号时，点「添加酷狗账号」才弹此弹窗 -->
-    <el-dialog v-model="showConnect" title="连接酷狗账号" width="460px" top="8vh" :close-on-click-modal="false" class="connect-dialog">
+    <el-dialog
+      v-model="showConnect"
+      title="连接酷狗账号"
+      width="460px"
+      top="8vh"
+      :close-on-click-modal="false"
+      class="connect-dialog"
+    >
       <div class="login-tabs">
         <div class="tab-nav">
           <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">
@@ -185,7 +186,13 @@
                 </el-button>
               </div>
             </div>
-            <el-button type="primary" size="large" :loading="submitLoading" class="submit-btn grad-btn" @click="handlePhoneLogin">
+            <el-button
+              type="primary"
+              size="large"
+              :loading="submitLoading"
+              class="submit-btn grad-btn"
+              @click="handlePhoneLogin"
+            >
               登录并连接
             </el-button>
           </div>
@@ -219,7 +226,12 @@
 
     <el-dialog v-model="showAccountSelect" title="选择账号" width="400px" :close-on-click-modal="false">
       <div class="account-list">
-        <div v-for="account in accountList" :key="account.userid" class="account-item" @click="selectAccount(account.userid)">
+        <div
+          v-for="account in accountList"
+          :key="account.userid"
+          class="account-item"
+          @click="selectAccount(account.userid)"
+        >
           <el-avatar :src="replaceImageSize(account.pic, 100)" :size="50" />
           <div class="account-info">
             <div class="account-name">
@@ -240,25 +252,18 @@ import type { KugouAccount } from '@/api';
 import type { QRCheckData, QRCreateData, QRKeyData } from '@/types';
 import { Loading as LoadingIcon } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { useRouter } from 'vue-router';
 import { kugouApi } from '@/api';
-import ThemeToggle from '@/components/ThemeToggle.vue';
-import { useAuth } from '@/stores/auth';
 import { replaceImageSize } from '@/utils/image';
+import { disableDemo, isDemo } from '@/utils/mock';
 import request from '@/utils/request';
 
-const router = useRouter();
-const { logout } = useAuth();
+const demo = isDemo();
+const loaded = ref(false);
 const loading = ref(false);
 const qrPending = ref(false);
 const submitLoading = ref(false);
 const accounts = ref<KugouAccount[]>([]);
 const showConnect = ref(false);
-
-async function onLogout() {
-  await logout();
-  router.push('/login');
-}
 
 const activeTab = ref('phone');
 const countdown = ref(0);
@@ -282,6 +287,7 @@ async function load() {
     /* ignore */
   } finally {
     loading.value = false;
+    loaded.value = true;
   }
 }
 
@@ -305,6 +311,24 @@ async function openRename(acct: KugouAccount) {
 }
 
 function openConnect() {
+  // 演示模式为纯预览：不展示真实酷狗登录（避免用户对项目盗号疑虑）
+  if (demo) {
+    ElMessageBox.confirm(
+      '演示模式仅用于预览，不会连接你的真实酷狗账号。是否退出演示模式，去连接真实的酷狗账号？',
+      '演示模式',
+      {
+        confirmButtonText: '退出演示模式',
+        cancelButtonText: '继续预览',
+        type: 'info',
+      }
+    )
+      .then(() => {
+        disableDemo();
+        window.location.reload();
+      })
+      .catch(() => {});
+    return;
+  }
   activeTab.value = 'phone';
   qrCode.value = '';
   qrKey.value = '';
@@ -454,58 +478,10 @@ load();
 </script>
 
 <style scoped>
-.accounts-page {
+  .accounts-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  flex-shrink: 0;
-  padding: 0 22px;
-  background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-bottom: 1px solid var(--border);
-}
-
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.app-brand {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
-}
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-  line-height: 1.2;
-}
-
-.brand-text strong {
-  font-size: 15px;
-  font-weight: 700;
-}
-
-.brand-text span {
-  font-size: 10px;
-  letter-spacing: 1.5px;
-  color: var(--text-3);
-}
-
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  height: 100%;
 }
 
 .accounts {
@@ -514,7 +490,10 @@ load();
   padding: 24px 26px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 20px;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 
 .page-head h2 {
@@ -527,6 +506,33 @@ load();
   margin: 0;
   font-size: 13px;
   color: var(--text-3);
+}
+
+/* 演示模式提示（低调的内联信息条） */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+
+.demo-banner b {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.demo-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 /* 内嵌连接表单 */
@@ -723,8 +729,10 @@ load();
 .grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
+  align-items: stretch;
+  min-height: 240px; /* 加载遮罩有空间，避免空宫格塌陷 */
 }
 
 .grid-card {

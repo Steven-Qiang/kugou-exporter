@@ -19,7 +19,16 @@
       <aside class="brand-panel">
         <div class="brand-head">
           <div class="brand-logo">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg
+              viewBox="0 0 24 24"
+              width="34"
+              height="34"
+              fill="none"
+              stroke="#fff"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
               <path d="M9 18V5l12-2v13" />
               <circle cx="6" cy="18" r="3" />
               <circle cx="18" cy="16" r="3" />
@@ -57,7 +66,9 @@
         <div class="brand-footer">
           <a href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank">
             <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
-              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+              />
             </svg>
             <span>GitHub</span>
           </a>
@@ -72,7 +83,19 @@
           <template v-for="(s, i) in steps" :key="i">
             <div class="step" :class="{ active: step === i, done: step > i }" @click="step = i">
               <span class="step-dot">
-                <svg v-if="step > i" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                <svg
+                  v-if="step > i"
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
                 <template v-else>{{ i + 1 }}</template>
               </span>
               <span class="step-label">{{ s }}</span>
@@ -87,7 +110,16 @@
           <div v-if="step === 0" class="panel panel-welcome enter">
             <div class="logo-halo">
               <div class="logo">
-                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="40"
+                  height="40"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
                   <path d="M9 18V5l12-2v13" />
                   <circle cx="6" cy="18" r="3" />
                   <circle cx="18" cy="16" r="3" />
@@ -98,15 +130,30 @@
               欢迎使用
             </h1>
             <p class="typewriter">
-              {{ typedText }}<span class="caret" />
+              {{ typedText }}
+              <span class="caret" />
             </p>
             <p class="welcome-desc">
               连接你的酷狗账号，把喜欢的歌单一键带到小爱音箱等播放器。
             </p>
             <el-button class="grad-btn big-btn" type="primary" size="large" @click="step = 1">
               开始使用
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </el-button>
+            <button class="skip-link" type="button" @click="step = 2">
+              跳过引导，直接创建账号 ›
+            </button>
           </div>
 
           <!-- 亮点 -->
@@ -118,9 +165,25 @@
               一次连接，随时随地畅听你的歌单
             </p>
             <div class="feat-grid">
-              <div v-for="(f, i) in features" :key="f.title" class="feat-card enterup" :style="{ animationDelay: `${i * 0.1}s` }">
+              <div
+                v-for="(f, i) in features"
+                :key="f.title"
+                class="feat-card enterup"
+                :style="{ animationDelay: `${i * 0.1}s` }"
+              >
                 <span class="feat-icon">
-                  <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path :d="f.svg" /></svg>
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="22"
+                    height="22"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path :d="f.svg" />
+                  </svg>
                 </span>
                 <div class="feat-text">
                   <strong>{{ f.title }}</strong>
@@ -130,15 +193,42 @@
             </div>
             <el-button class="grad-btn big-btn" type="primary" size="large" style="width: 100%" @click="step = 2">
               下一步
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+              <svg
+                viewBox="0 0 24 24"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
             </el-button>
+            <button class="skip-link" type="button" @click="step = 2">
+              跳过引导，直接创建账号 ›
+            </button>
           </div>
 
           <!-- 创建账号 -->
           <div v-else class="panel panel-form">
             <div class="form-top">
               <div class="mini-logo grad-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13" /><circle cx="6" cy="18" r="3" /><circle cx="18" cy="16" r="3" /></svg>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="20"
+                  height="20"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M9 18V5l12-2v13" />
+                  <circle cx="6" cy="18" r="3" />
+                  <circle cx="18" cy="16" r="3" />
+                </svg>
               </div>
               <div>
                 <h2 class="panel-title">
@@ -154,8 +244,22 @@
               <label class="field-label">用户名</label>
               <el-input v-model="form.username" placeholder="设置用户名" size="large" :prefix-icon="User" />
               <label class="field-label">密码</label>
-              <el-input v-model="form.password" type="password" show-password placeholder="至少 6 位" size="large" :prefix-icon="Lock" @keyup.enter="submit" />
-              <el-button class="grad-btn big-btn submit-btn" type="primary" size="large" :loading="loading" @click="submit">
+              <el-input
+                v-model="form.password"
+                type="password"
+                show-password
+                placeholder="至少 6 位"
+                size="large"
+                :prefix-icon="Lock"
+                @keyup.enter="submit"
+              />
+              <el-button
+                class="grad-btn big-btn submit-btn"
+                type="primary"
+                size="large"
+                :loading="loading"
+                @click="submit"
+              >
                 {{ loading ? '创建中...' : '创建并进入' }}
               </el-button>
             </el-form>
@@ -182,9 +286,24 @@ const form = reactive({ username: '', password: '' });
 const steps = ['欢迎', '亮点', '创建账号'];
 
 const features = [
-  { icon: '🎵', title: '多格式导出', desc: 'XiaoMusic / JSON / CSV 一键生成', svg: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3' },
-  { icon: '🔗', title: '永久代理链接', desc: '实时获取最新播放地址，拒绝过期', svg: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71' },
-  { icon: '☁️', title: '多端部署', desc: '支持内网、外网与 Docker', svg: 'M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14' },
+  {
+    icon: '🎵',
+    title: '多格式导出',
+    desc: 'XiaoMusic / JSON / CSV 一键生成',
+    svg: 'M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3',
+  },
+  {
+    icon: '🔗',
+    title: '永久代理链接',
+    desc: '实时获取最新播放地址，拒绝过期',
+    svg: 'M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71',
+  },
+  {
+    icon: '☁️',
+    title: '多端部署',
+    desc: '支持内网、外网与 Docker',
+    svg: 'M11 5 6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14',
+  },
 ];
 
 // 打字机 slogan
@@ -237,7 +356,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&display=swap');
 
 .setup-page {
   min-height: 100vh;
@@ -775,6 +894,20 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+}
+
+.skip-link {
+  margin-top: 14px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+.skip-link:hover {
+  color: var(--accent);
 }
 
 /* 亮点 */

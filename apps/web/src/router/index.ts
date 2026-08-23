@@ -6,9 +6,17 @@ const router = createRouter({
   routes: [
     { path: '/setup', name: 'Setup', component: () => import('@/views/SetupView.vue') },
     { path: '/login', name: 'Login', component: () => import('@/views/LoginView.vue') },
-    { path: '/accounts', name: 'Accounts', component: () => import('@/views/AccountsView.vue') },
-    { path: '/playlist', name: 'Playlist', component: () => import('@/views/PlaylistView.vue') },
-    { path: '/', redirect: '/accounts' },
+    {
+      // 登录后的应用壳：左侧边导航 + 内容区
+      path: '/',
+      component: () => import('@/components/AppLayout.vue'),
+      children: [
+        { path: '', redirect: '/accounts' },
+        { path: 'accounts', name: 'Accounts', component: () => import('@/views/AccountsView.vue') },
+        { path: 'playlist', name: 'Playlist', component: () => import('@/views/PlaylistView.vue') },
+        { path: 'settings', name: 'Settings', component: () => import('@/views/SettingsView.vue') },
+      ],
+    },
   ],
 });
 

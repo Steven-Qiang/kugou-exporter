@@ -1,6 +1,6 @@
 import type { Express, Response } from 'express';
 import kugoumusicapi from 'kugoumusicapi';
-import { requireAuth } from '../middleware/session';
+import { requireAuth, SESSION_COOKIE } from '../middleware/session';
 import {
   addKugouAccount,
   deleteKugouAccount,
@@ -34,7 +34,10 @@ export function attachKugouRoutes(app: Express): void {
   // 添加酷狗账号：保存当前请求里的浏览器 cookie（前端在完成酷狗登录后调用）
   app.post('/kugou', requireAuth, (req, res) => {
     const nickname = String(req.body?.nickname || '');
-    const cookies = req.cookies || {};
+    // 剔除应用自身的会话 cookie（kugou_session）等非酷狗凭据，避免把会话令牌持久化进酷狗 cookie 数据
+    const safety = req.cookies ? { ...req.cookies } : {};
+    delete safety[SESSION_COOKIE];
+    const cookies = safety;
     const makeActive = req.body?.active === undefined ? true : !!req.body.active;
     const acct = addKugouAccount(req.userId ?? 0, nickname, cookies, makeActive);
     res.json({ success: true, account: publicKugouAccount(acct) });

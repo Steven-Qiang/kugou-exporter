@@ -383,6 +383,8 @@ async function handleExport(type: 'xiaomusic' | 'json' | 'csv') {
       exportProgress.value = 100;
       await recordHistory(type, sortedSongs.length, content);
       ElMessage.success(`导出成功！共 ${sortedSongs.length} 首`);
+      // CSV 没有“结果预览”，直接结束导出态并关闭弹窗（否则 handleClose 的守卫会挡住关闭）
+      exporting.value = false;
       handleClose();
       return;
     }
@@ -390,7 +392,7 @@ async function handleExport(type: 'xiaomusic' | 'json' | 'csv') {
     await recordHistory(type, sortedSongs.length, exportResult.value);
     exportStatus.value = '导出完成！';
     exportProgress.value = 100;
-    ElMessage.success(`导出成功！共 ${exportDetail.value.successCount || sortedSongs.length} 首`);
+    ElMessage.success(`导出成功！共 ${sortedSongs.length} 首`);
   } catch (error) {
     console.error(error);
     ElMessage.error('导出失败');

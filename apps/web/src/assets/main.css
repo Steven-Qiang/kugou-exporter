@@ -1,41 +1,41 @@
 :root {
-  /* Design tokens - Graphite minimal + persimmon accent */
-  --bg-base: #f7f6f3;
-  --bg-glow-1: rgba(233, 106, 60, 0.06);
-  --bg-glow-2: rgba(0, 0, 0, 0.02);
-  --surface: rgba(255, 255, 255, 0.85);
+  /* Design tokens - clean neutral + vivid persimmon accent */
+  --bg-base: #f4f5f7;
+  --bg-glow-1: rgba(244, 115, 60, 0.05);
+  --bg-glow-2: rgba(23, 30, 45, 0.02);
+  --surface: #ffffff;
   --surface-solid: #ffffff;
-  --surface-hover: rgba(255, 255, 255, 1);
-  --surface-muted: #f0efec;
-  --border: rgba(30, 28, 26, 0.08);
-  --border-strong: rgba(30, 28, 26, 0.15);
-  --text-1: #1c1b19;
-  --text-2: #57544f;
-  --text-3: #9a968f;
-  --accent: #e96a3c;
-  --accent-2: #f5913f;
-  --accent-3: #f0705c;
-  --accent-soft: rgba(233, 106, 60, 0.12);
-  --accent-grad: linear-gradient(135deg, #e96a3c 0%, #f5913f 100%);
-  --shadow-1: 0 8px 30px rgba(40, 38, 35, 0.06);
-  --shadow-2: 0 18px 50px rgba(40, 38, 35, 0.12);
+  --surface-hover: #f7f8fa;
+  --surface-muted: #eef0f3;
+  --border: rgba(17, 24, 39, 0.08);
+  --border-strong: rgba(17, 24, 39, 0.16);
+  --text-1: #16181d;
+  --text-2: #5a6270;
+  --text-3: #9aa2b1;
+  --accent: #f4733c;
+  --accent-2: #ff9b4d;
+  --accent-3: #f5654a;
+  --accent-soft: rgba(244, 115, 60, 0.11);
+  --accent-grad: linear-gradient(135deg, #f4733c 0%, #ff9b4d 100%);
+  --shadow-1: 0 8px 30px rgba(23, 30, 45, 0.06);
+  --shadow-2: 0 18px 50px rgba(23, 30, 45, 0.12);
   --radius: 16px;
   --radius-sm: 10px;
   --glass-blur: 18px;
 
   color-scheme: light;
   /* Element Plus overrides */
-  --el-color-primary: #e96a3c;
-  --el-color-primary-light-3: #f08c66;
-  --el-color-primary-light-5: #f5ab8d;
-  --el-color-primary-light-7: #fad0bf;
-  --el-color-primary-light-8: #fce0d5;
-  --el-color-primary-light-9: #fef1ec;
-  --el-color-primary-dark-2: #c94f27;
+  --el-color-primary: #f4733c;
+  --el-color-primary-light-3: #f89a73;
+  --el-color-primary-light-5: #fab7a0;
+  --el-color-primary-light-7: #fdd5c8;
+  --el-color-primary-light-8: #fee4da;
+  --el-color-primary-light-9: #fff1ec;
+  --el-color-primary-dark-2: #d95e2c;
   --el-border-radius-base: 10px;
-  --el-text-color-primary: #1c1b19;
-  --el-text-color-regular: #57544f;
-  --el-text-color-secondary: #9a968f;
+  --el-text-color-primary: #16181d;
+  --el-text-color-regular: #5a6270;
+  --el-text-color-secondary: #9aa2b1;
   --el-fill-color-blank: #ffffff;
   --el-bg-color: #ffffff;
   --el-bg-color-overlay: #ffffff;
@@ -126,23 +126,15 @@ body {
 .bg-scene::before {
   content: '';
   position: absolute;
-  top: -20%;
-  left: -10%;
-  width: 55vw;
-  height: 55vw;
-  background: radial-gradient(circle, var(--bg-glow-1) 0%, transparent 60%);
-  filter: blur(40px);
+  inset: 0;
+  background: radial-gradient(1000px 600px at 85% -10%, rgba(244, 115, 60, 0.04) 0%, transparent 55%);
 }
 
 .bg-scene::after {
   content: '';
   position: absolute;
-  right: -10%;
-  bottom: -25%;
-  width: 60vw;
-  height: 60vw;
-  background: radial-gradient(circle, var(--bg-glow-2) 0%, transparent 62%);
-  filter: blur(40px);
+  inset: 0;
+  background: radial-gradient(900px 500px at -5% 110%, rgba(23, 30, 45, 0.03) 0%, transparent 55%);
 }
 
 /* Glass card helper */

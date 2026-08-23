@@ -79,13 +79,7 @@
             @keyup.enter="submit"
           />
 
-          <el-button
-            class="grad-btn submit-btn"
-            type="primary"
-            size="large"
-            :loading="loading"
-            @click="submit"
-          >
+          <el-button class="grad-btn submit-btn" type="primary" size="large" :loading="loading" @click="submit">
             登录
           </el-button>
 
@@ -106,6 +100,9 @@
               </svg>
               {{ demoEnabled ? '退出演示模式' : '无需登录，进入演示模式' }}
             </button>
+            <p v-if="!demoEnabled" class="demo-tip">
+              演示模式使用模拟账号预览，不会连接你的真实酷狗账号
+            </p>
           </div>
         </div>
       </main>
@@ -367,7 +364,9 @@ authApi.setupStatus().then((st) => {
   padding-top: 18px;
   border-top: 1px solid var(--border);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
 }
 
 .demo-link {
@@ -385,6 +384,14 @@ authApi.setupStatus().then((st) => {
 
 .demo-link:hover {
   opacity: 0.8;
+}
+
+.demo-tip {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  line-height: 1.6;
 }
 
 @media (max-width: 860px) {

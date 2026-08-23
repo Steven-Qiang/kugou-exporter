@@ -2,6 +2,7 @@ import type { Express, Response } from 'express';
 import kugoumusicapi from 'kugoumusicapi';
 import { refreshLogin, registerDev } from '../auth';
 import {
+  countKugouAccounts,
   getFirstKugouCookies,
   getKugouCookiesByKgUserid,
   setKugouAccountCookiesById,
@@ -19,23 +20,29 @@ export function attachProxyRoutes(app: Express): void {
       let accountId: number | null = null;
       let cookies: Record<string, string> | null = null;
 
+      // 1) 优先按酷狗 userid 定位（kg_userid 是酷狗侧唯一账号标识，跨用户安全）
       if (uid) {
         const byUser = getKugouCookiesByKgUserid(uid);
         if (Object.keys(byUser).length > 0) {
-          accountId = null; // 通过 userid 命中但拿不到 id，改用写回 by userid（见下）
-          cookies = byUser;
+          cookies = byUser; // accountId 保持 null → persist 走按 userid 写回
         }
       }
 
-      // 未命中（无 uid / userid 匹配不到 / 旧账号 kg_userid 为空）→ 兜底第一个账号
+      // 2) 未命中（无 uid / userid 匹配不到 / 旧账号 kg_userid 为空）→ 兜底
+      //    仅当系统“只有一个账号”时才允许兜底，避免多用户下泄露到别人的账号。
       if (!cookies || Object.keys(cookies).length === 0) {
-        const first = getFirstKugouCookies();
-        if (!first) {
-          res.status(404).send('No Kugou account');
-          return;
+        if (countKugouAccounts() === 1) {
+          const sole = getFirstKugouCookies();
+          if (sole) {
+            accountId = sole.id;
+            cookies = sole.cookies;
+          }
         }
-        accountId = first.id;
-        cookies = first.cookies;
+      }
+
+      if (!cookies || Object.keys(cookies).length === 0) {
+        res.status(404).send('No Kugou account');
+        return;
       }
 
       // persist 回写：能定位账号 id 时按 id 写；否则按 userid 写（保持后续一致）

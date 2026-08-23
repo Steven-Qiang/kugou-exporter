@@ -54,8 +54,11 @@ export const kugouApi = {
 
 export const configApi = {
   get: () =>
-    request.get<{ serverUrl: string; settings: { quality: string; serverUrl: string } }>('/config/get').then((r) => r.data),
-  save: (payload: { serverUrl?: string; quality?: string }) => request.post('/config/save', payload).then((r) => r.data),
+    request
+      .get<{ serverUrl: string; settings: { quality: string; serverUrl: string } }>('/config/get')
+      .then((r) => r.data),
+  save: (payload: { serverUrl?: string; quality?: string }) =>
+    request.post('/config/save', payload).then((r) => r.data),
 };
 
 export const historyApi = {
@@ -68,4 +71,15 @@ export const historyApi = {
     content: string;
   }) => request.post('/history', payload).then((r) => r.data),
   remove: (id: number) => request.delete(`/history/${id}`).then((r) => r.data),
+};
+
+export const userApi = {
+  changePassword: (oldPassword: string, newPassword: string) =>
+    request.post<{ success: boolean }>('/auth/change-password', { oldPassword, newPassword }).then((r) => r.data),
+  users: () => request.get<{ users: SessionUser[] }>('/auth/users').then((r) => r.data.users),
+  create: (username: string, password: string) =>
+    request.post<{ success: boolean; user: SessionUser }>('/auth/users', { username, password }).then((r) => r.data),
+  resetPassword: (id: number, password: string) =>
+    request.post<{ success: boolean }>(`/auth/users/${id}/reset-password`, { password }).then((r) => r.data),
+  remove: (id: number) => request.delete<{ success: boolean }>(`/auth/users/${id}`).then((r) => r.data),
 };

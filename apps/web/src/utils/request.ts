@@ -38,15 +38,17 @@ const demoAdapter: AxiosAdapter = async (config) => {
 
 /**
  * Endpoints that always hit the real backend — never mocked — even in demo mode.
- * 演示模式下，认证与登录相关请求必须走真实后端（否则登录页/守卫会被演示数据劫持）；
- * 数据接口（/kugou/*、/config、/history、/auth/me）在演示模式下由 mock 拦截，便于无需登录预览 UI。
+ * 演示模式是「纯预览」，绝不能触碰真实酷狗接口（含登录/验证码/数据），避免用户对项目盗号有疑虑。
+ * 仅保留应用自身的引导接口（创建管理员 / 应用登录）为真实；其余（/kugou/*、/login/*、/captcha/*、
+ * /auth/me、/auth/logout、/config、/history）全部由 mock 拦截。
  */
-const REAL_PATHS = ['/auth/setup', '/auth/login', '/auth/logout', '/captcha', '/login'];
+// 仅「创建管理员 / 应用登录」这两个引导接口在演示模式下仍需真实（否则登录页/守卫会被演示数据劫持）。
+// 精确匹配，避免把 /auth/setup/status 等也误判为真实。
+const REAL_EXACT = new Set(['/auth/setup', '/auth/login']);
 
 request.defaults.adapter = async (config) => {
   const pathname = (config.url || '').split('?')[0];
-  if (isDemo() && !REAL_PATHS.some((p) => pathname.startsWith(p)))
-    return demoAdapter(config);
+  if (isDemo() && !REAL_EXACT.has(pathname)) return demoAdapter(config);
   // Pass through to the real browser adapter (XHR / fetch).
   return axios.getAdapter(axios.defaults.adapter)(config);
 };
@@ -54,7 +56,13 @@ request.defaults.adapter = async (config) => {
 request.interceptors.response.use(
   (response) => {
     if (import.meta.env.DEV) console.log('API Response:', response.config.url, JSON.stringify(response.data));
-    if (response.data.data) return response.data;
+    // 约定：`.data` 始终是“有效载荷”。
+    //   - body 形如 `{ code, data, msg }`（酷狗透传）→ 返回 body，调用方 `.data` 指向内层；
+    //   - body 不带顶层 `data`（自定义成功体，如 `{ success, user }`）→ 返回完整 axios response，
+    //     调用方 `.data` 即 body。
+    // 两种情况 `.data` 都是有效载荷，仅对“body 是对象且含 data 键”做解包；其余保持原样，逻辑确定。
+    const body = response.data;
+    if (body && typeof body === 'object' && 'data' in body) return body;
     return response;
   },
   (error) => {
