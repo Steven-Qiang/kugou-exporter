@@ -1,79 +1,91 @@
+/* ==========================================================================
+   设计令牌 —— 克制现代风格（中性底色 + 单一低饱和靛蓝强调色）
+   原则：无渐变堆砌 / 无发光 / 无装饰动画，只保留清晰的层级与轻过渡。
+   变量名与旧版兼容，排除模块（歌单 / 酷狗账号登录 / 设置）仅换肤不影响布局。
+   ========================================================================== */
+
 :root {
-  /* Design tokens - clean neutral + vivid persimmon accent */
-  --bg-base: #f4f5f7;
-  --bg-glow-1: rgba(244, 115, 60, 0.05);
-  --bg-glow-2: rgba(23, 30, 45, 0.02);
+  --bg-base: #fafafb;
   --surface: #ffffff;
   --surface-solid: #ffffff;
-  --surface-hover: #f7f8fa;
-  --surface-muted: #eef0f3;
-  --border: rgba(17, 24, 39, 0.08);
-  --border-strong: rgba(17, 24, 39, 0.16);
-  --text-1: #16181d;
-  --text-2: #5a6270;
-  --text-3: #9aa2b1;
-  --accent: #f4733c;
-  --accent-2: #ff9b4d;
-  --accent-3: #f5654a;
-  --accent-soft: rgba(244, 115, 60, 0.11);
-  --accent-grad: linear-gradient(135deg, #f4733c 0%, #ff9b4d 100%);
-  --shadow-1: 0 8px 30px rgba(23, 30, 45, 0.06);
-  --shadow-2: 0 18px 50px rgba(23, 30, 45, 0.12);
-  --radius: 16px;
-  --radius-sm: 10px;
-  --glass-blur: 18px;
+  --surface-hover: #f2f2f4;
+  --surface-muted: #eef0f2;
+  --border: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --text-1: #1b1b1f;
+  --text-2: #5d5d66;
+  --text-3: #96969f;
+  --accent: #5e6ad2;
+  --accent-2: #7781da;
+  --accent-3: #4954c0;
+  --accent-soft: rgba(94, 106, 210, 0.08);
+  --accent-grad: #5e6ad2;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --glass-blur: 12px;
+  --font-display:
+    'Inter',
+    'HarmonyOS Sans SC',
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
 
   color-scheme: light;
-  /* Element Plus overrides */
-  --el-color-primary: #f4733c;
-  --el-color-primary-light-3: #f89a73;
-  --el-color-primary-light-5: #fab7a0;
-  --el-color-primary-light-7: #fdd5c8;
-  --el-color-primary-light-8: #fee4da;
-  --el-color-primary-light-9: #fff1ec;
-  --el-color-primary-dark-2: #d95e2c;
-  --el-border-radius-base: 10px;
-  --el-text-color-primary: #16181d;
-  --el-text-color-regular: #5a6270;
-  --el-text-color-secondary: #9aa2b1;
+
+  /* ---- Element Plus ---- */
+  --el-color-primary: #5e6ad2;
+  --el-color-primary-light-3: #8e97df;
+  --el-color-primary-light-5: #aeb4e8;
+  --el-color-primary-light-7: #ced2f1;
+  --el-color-primary-light-8: #dee1f6;
+  --el-color-primary-light-9: #eef0fa;
+  --el-color-primary-dark-2: #4b54a8;
+  --el-border-radius-base: 8px;
+  --el-text-color-primary: #1b1b1f;
+  --el-text-color-regular: #5d5d66;
+  --el-text-color-secondary: #96969f;
   --el-fill-color-blank: #ffffff;
   --el-bg-color: #ffffff;
   --el-bg-color-overlay: #ffffff;
 }
 
 html[data-theme='dark'] {
-  --bg-base: #141415;
-  --bg-glow-1: rgba(240, 113, 63, 0.1);
-  --bg-glow-2: rgba(0, 0, 0, 0.4);
-  --surface: rgba(28, 28, 29, 0.82);
-  --surface-solid: #1e1e20;
-  --surface-hover: rgba(40, 40, 42, 0.95);
-  --surface-muted: #1b1b1d;
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --text-1: #ececee;
-  --text-2: #a5a5a9;
+  --bg-base: #0a0a0b;
+  --surface: #141517;
+  --surface-solid: #101112;
+  --surface-hover: #1d1e20;
+  --surface-muted: #18191b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text-1: #ededee;
+  --text-2: #a3a3a8;
   --text-3: #6e6e73;
-  --accent: #f0713f;
-  --accent-2: #ffa14f;
-  --accent-3: #ff8666;
-  --accent-soft: rgba(240, 113, 63, 0.16);
-  --accent-grad: linear-gradient(135deg, #f0713f 0%, #ffa14f 100%);
-  --shadow-1: 0 8px 30px rgba(0, 0, 0, 0.4);
-  --shadow-2: 0 18px 50px rgba(0, 0, 0, 0.55);
-  --el-color-primary: #f0713f;
-  --el-color-primary-light-3: #f5916b;
-  --el-color-primary-light-5: #f7ac8c;
-  --el-color-primary-light-7: #fbc9b2;
-  --el-color-primary-light-8: #fcd9cb;
-  --el-color-primary-light-9: #feeae3;
-  --el-color-primary-dark-2: #d55c2e;
-  --el-text-color-primary: #ececee;
-  --el-text-color-regular: #a5a5a9;
+  --accent: #6f7ae0;
+  --accent-2: #8a93ea;
+  --accent-3: #5d69cf;
+  --accent-soft: rgba(111, 122, 224, 0.12);
+  --accent-grad: #6f7ae0;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --el-color-primary: #6f7ae0;
+  --el-color-primary-light-3: #4e57a1;
+  --el-color-primary-light-5: #383e73;
+  --el-color-primary-light-7: #21244a;
+  --el-color-primary-light-8: #16182f;
+  --el-color-primary-light-9: #0c0d19;
+  --el-color-primary-dark-2: #8b94ea;
+  --el-text-color-primary: #ededee;
+  --el-text-color-regular: #a3a3a8;
   --el-text-color-secondary: #6e6e73;
-  --el-fill-color-blank: #1e1e20;
-  --el-bg-color: #1e1e20;
-  --el-bg-color-overlay: #232325;
+  --el-fill-color-blank: #101112;
+  --el-bg-color: #101112;
+  --el-bg-color-overlay: #1a1b1d;
 }
 
 * {
@@ -106,7 +118,7 @@ body {
   background: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
 #app {
@@ -114,74 +126,78 @@ body {
   min-height: 100vh;
 }
 
-/* Decorative ambient background */
-.bg-scene {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  background: var(--bg-base);
-}
+/* ==========================================================================
+   工具类
+   ========================================================================== */
 
-.bg-scene::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(1000px 600px at 85% -10%, rgba(244, 115, 60, 0.04) 0%, transparent 55%);
-}
-
-.bg-scene::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(900px 500px at -5% 110%, rgba(23, 30, 45, 0.03) 0%, transparent 55%);
-}
-
-/* Glass card helper */
+/* 玻璃卡片（保留定义，兼容旧引用） */
 .glass {
   background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-1);
 }
 
-/* Gradient text */
+/* 强调文字（纯色，不使用渐变） */
 .grad-text {
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
+  color: var(--accent);
 }
 
-/* Gradient primary button */
+/* 主按钮：实色，无渐变无发光 */
 .grad-btn.el-button--primary {
-  background: var(--accent-grad);
-  border: none;
-  box-shadow: 0 10px 24px -6px var(--accent-soft);
+  background: var(--accent);
+  border: 1px solid transparent;
+  color: #fff;
   transition:
-    box-shadow 0.18s ease,
-    filter 0.18s ease;
+    background-color 0.15s ease,
+    filter 0.15s ease;
 }
 
 .grad-btn.el-button--primary:hover {
-  filter: brightness(1.06);
-  box-shadow: 0 14px 30px -8px rgba(233, 106, 60, 0.45);
+  filter: brightness(1.08);
 }
 
-/* Gradient icon badge */
+.grad-btn.el-button--primary:active {
+  filter: brightness(0.95);
+}
+
+/* 图标徽标：实色 */
 .grad-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--accent-grad);
+  background: var(--accent);
   color: #fff;
-  border-radius: 14px;
+  border-radius: 10px;
 }
 
-/* Scrollbar */
+/* ==========================================================================
+   Element Plus 质感统一
+   ========================================================================== */
+
+.el-input__wrapper {
+  transition:
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.el-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.el-dialog {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.el-dialog__body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* ==========================================================================
+   滚动条
+   ========================================================================== */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -200,7 +216,9 @@ body {
   background: transparent;
 }
 
-/* Utility */
+/* ==========================================================================
+   工具类（旧兼容）
+   ========================================================================== */
 .flex {
   display: flex;
 }
@@ -215,25 +233,20 @@ body {
   color: var(--text-3);
 }
 
-/* Fade transition for route views (opacity only; avoids transient vertical
-   overflow that can flash a scrollbar and shift centered content sideways). */
+/* 路由切换：淡入 + 轻微上浮 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.25s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
 }
 
-.fade-enter-from,
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
 .fade-leave-to {
   opacity: 0;
-}
-
-/* Element Plus overlay consistency */
-.el-overlay {
-  backdrop-filter: blur(6px);
-}
-
-/* Dialog body scroll */
-.el-dialog__body {
-  max-height: 70vh;
-  overflow-y: auto;
+  transform: translateY(-4px);
 }

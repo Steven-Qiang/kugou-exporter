@@ -113,42 +113,37 @@
         </p>
       </div>
 
-      <!-- 有账号：账号网格 -->
-      <div v-else v-loading="loading" class="grid">
-        <div v-for="acct in accounts" :key="acct.id" class="grid-card" :class="{ active: acct.active }">
-          <div class="grid-top">
-            <div class="grid-avatar">
-              {{ firstNick(acct.nickname) }}
+      <!-- 有账号：账号列表（行式卡片） -->
+      <div v-else v-loading="loading" class="acct-list">
+        <div v-for="acct in accounts" :key="acct.id" class="acct-row" :class="{ active: acct.active }">
+          <span class="row-avatar">{{ firstNick(acct.nickname) }}</span>
+          <div class="row-body">
+            <div class="row-name" :title="acct.nickname || '未命名账号'">
+              {{ acct.nickname || '未命名账号' }}
             </div>
-            <div class="grid-meta">
-              <div class="grid-name-row">
-                <div class="grid-name">
-                  {{ acct.nickname || '未命名账号' }}
-                </div>
-                <span v-if="acct.active" class="grid-active">使用中</span>
-              </div>
-              <div class="grid-status">
-                {{ acct.active ? '当前账号' : '已连接' }}
-              </div>
+            <div class="row-sub">
+              <span v-if="acct.active" class="row-dot" />
+              <span>{{ acct.active ? '当前账号' : '已连接' }}</span>
+              <span v-if="acct.kgUserid" class="row-uid">UID {{ acct.kgUserid }}</span>
             </div>
           </div>
-          <div class="grid-actions">
-            <el-button v-if="!acct.active" size="small" type="primary" plain @click="activate(acct.id)">
+          <div class="row-actions">
+            <el-button v-if="!acct.active" size="small" type="primary" class="act-switch" @click="activate(acct.id)">
               切换
             </el-button>
-            <el-button size="small" text @click="openRename(acct)">
+            <el-button size="small" text class="act-ghost" @click="openRename(acct)">
               重命名
             </el-button>
-            <el-button size="small" text type="danger" @click="remove(acct.id)">
+            <el-button size="small" text type="danger" class="act-ghost act-danger" @click="remove(acct.id)">
               删除
             </el-button>
           </div>
         </div>
 
-        <!-- 添加账号卡片 -->
-        <button class="grid-card add-card" @click="openConnect">
+        <!-- 添加账号行 -->
+        <button class="acct-row add-row" @click="openConnect">
           <span class="add-icon">+</span>
-          <span class="add-label">添加酷狗账号</span>
+          <span>添加酷狗账号</span>
         </button>
       </div>
     </div>
@@ -725,169 +720,141 @@ load();
   font-size: 14px;
 }
 
-/* 账号网格 */
-.grid {
+/* 账号列表：行式卡片 */
+.acct-list {
   width: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  align-items: stretch;
-  min-height: 240px; /* 加载遮罩有空间，避免空宫格塌陷 */
-}
-
-.grid-card {
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: var(--surface);
-  text-align: left;
-  transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  position: relative;
-  overflow: hidden;
+  gap: 10px;
+  min-height: 240px; /* 加载遮罩有空间，避免空列表塌陷 */
 }
 
-.grid-card::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
-  opacity: 0;
-  transition: opacity 0.25s ease;
-}
-
-.grid-card:hover::before {
-  opacity: 1;
-}
-
-.grid-card:hover {
-  border-color: var(--accent);
-  transform: translateY(-3px);
-  box-shadow: 0 14px 36px -20px var(--accent-soft);
-}
-
-.grid-card.active {
-  border-color: var(--accent);
-  background: linear-gradient(160deg, var(--surface), var(--accent-soft));
-}
-
-.grid-top {
+.acct-row {
   display: flex;
   align-items: center;
-  gap: 14px;
-  position: relative;
-  z-index: 1;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  text-align: left;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.grid-avatar {
-  position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  background: var(--accent-grad);
+.acct-row:hover {
+  background: var(--surface-hover);
+}
+
+.acct-row.active {
+  border-color: var(--accent);
+}
+
+/* 头像：实色首字 */
+.row-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--accent);
   color: #fff;
-  font-size: 26px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 10px 24px -10px rgba(233, 106, 60, 0.5);
 }
 
-.grid-active {
-  flex-shrink: 0;
-  padding: 1px 8px;
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  line-height: 1.6;
-  color: #fff;
-  background: #12b76a;
-  white-space: nowrap;
-}
-
-.grid-name-row {
+.row-body {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.grid-meta {
-  min-width: 0;
-}
-
-.grid-name {
-  font-size: 16px;
-  font-weight: 700;
+.row-name {
+  font-size: 14px;
+  font-weight: 600;
   color: var(--text-1);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.grid-status {
+.row-sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
   color: var(--text-3);
-  margin-top: 3px;
 }
 
-.grid-actions {
+.row-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #12b76a;
+  flex-shrink: 0;
+}
+
+.row-uid {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.row-actions {
   display: flex;
-  gap: 4px;
   align-items: center;
-  position: relative;
-  z-index: 1;
+  gap: 2px;
+  flex-shrink: 0;
 }
 
-/* 添加账号卡片 */
-.add-card {
-  align-items: center;
+.act-switch {
+  font-weight: 600;
+}
+
+.act-ghost {
+  font-weight: 500;
+}
+
+/* 添加账号行 */
+.add-row {
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 14px;
   border: 1.5px dashed var(--border-strong);
   background: transparent;
   cursor: pointer;
-  min-height: 120px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 600;
 }
 
-.add-card:hover {
+.add-row:hover {
   border-color: var(--accent);
-  background: var(--accent-soft);
-  box-shadow: none;
+  background: var(--surface-hover);
+  color: var(--text-1);
 }
 
 .add-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--accent);
   background: var(--accent-soft);
-  transition: all 0.2s ease;
-}
-
-.add-card:hover .add-icon {
-  color: #fff;
-  background: var(--accent);
-}
-
-.add-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-2);
+  flex-shrink: 0;
 }
 
 .account-list {

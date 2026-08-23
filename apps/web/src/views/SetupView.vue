@@ -1,19 +1,5 @@
 <template>
   <div class="setup-page">
-    <!-- 动态背景 -->
-    <div class="bg-scene" aria-hidden="true">
-      <div class="glow glow-a" />
-      <div class="glow glow-b" />
-      <div class="glow glow-c" />
-      <div class="grid" />
-      <span class="note n1">♪</span>
-      <span class="note n2">♫</span>
-      <span class="note n3">♩</span>
-      <span class="note n4">♬</span>
-      <span class="note n5">♪</span>
-      <span class="note n6">♫</span>
-    </div>
-
     <div class="setup-shell">
       <!-- 左侧品牌面板 -->
       <aside class="brand-panel">
@@ -21,8 +7,8 @@
           <div class="brand-logo">
             <svg
               viewBox="0 0 24 24"
-              width="34"
-              height="34"
+              width="28"
+              height="28"
               fill="none"
               stroke="#fff"
               stroke-width="2"
@@ -35,7 +21,7 @@
             </svg>
           </div>
           <div>
-            <h1 class="grad-text">
+            <h1>
               酷狗歌单导出
             </h1>
             <p class="brand-sub">
@@ -49,7 +35,7 @@
         </p>
 
         <ul class="feature-list">
-          <li v-for="(f, i) in features" :key="f.title" :style="{ animationDelay: `${i * 0.14}s` }">
+          <li v-for="f in features" :key="f.title">
             <span class="feature-icon">{{ f.icon }}</span>
             <div>
               <strong>{{ f.title }}</strong>
@@ -58,14 +44,9 @@
           </li>
         </ul>
 
-        <!-- 均衡器动画 -->
-        <div class="eq" aria-hidden="true">
-          <span v-for="i in 7" :key="i" :style="{ animationDelay: `${i * 0.14}s` }" />
-        </div>
-
         <div class="brand-footer">
-          <a href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank">
-            <svg viewBox="0 0 16 16" width="16" height="16" fill="currentColor">
+          <a href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank" rel="noopener">
+            <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor">
               <path
                 d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
               />
@@ -86,8 +67,8 @@
                 <svg
                   v-if="step > i"
                   viewBox="0 0 24 24"
-                  width="14"
-                  height="14"
+                  width="13"
+                  height="13"
                   fill="none"
                   stroke="#fff"
                   stroke-width="3"
@@ -107,31 +88,28 @@
         <!-- 步骤内容 -->
         <div :key="step" class="step-body">
           <!-- 欢迎 -->
-          <div v-if="step === 0" class="panel panel-welcome enter">
-            <div class="logo-halo">
-              <div class="logo">
-                <svg
-                  viewBox="0 0 24 24"
-                  width="40"
-                  height="40"
-                  fill="none"
-                  stroke="#fff"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <path d="M9 18V5l12-2v13" />
-                  <circle cx="6" cy="18" r="3" />
-                  <circle cx="18" cy="16" r="3" />
-                </svg>
-              </div>
+          <div v-if="step === 0" class="panel panel-welcome">
+            <div class="logo">
+              <svg
+                viewBox="0 0 24 24"
+                width="32"
+                height="32"
+                fill="none"
+                stroke="#fff"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
             </div>
             <h1 class="welcome-title">
               欢迎使用
             </h1>
             <p class="typewriter">
               {{ typedText }}
-              <span class="caret" />
             </p>
             <p class="welcome-desc">
               连接你的酷狗账号，把喜欢的歌单一键带到小爱音箱等播放器。
@@ -140,8 +118,8 @@
               开始使用
               <svg
                 viewBox="0 0 24 24"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -165,17 +143,12 @@
               一次连接，随时随地畅听你的歌单
             </p>
             <div class="feat-grid">
-              <div
-                v-for="(f, i) in features"
-                :key="f.title"
-                class="feat-card enterup"
-                :style="{ animationDelay: `${i * 0.1}s` }"
-              >
+              <div v-for="f in features" :key="f.title" class="feat-card">
                 <span class="feat-icon">
                   <svg
                     viewBox="0 0 24 24"
-                    width="22"
-                    height="22"
+                    width="20"
+                    height="20"
                     fill="none"
                     stroke="currentColor"
                     stroke-width="2"
@@ -195,8 +168,8 @@
               下一步
               <svg
                 viewBox="0 0 24 24"
-                width="18"
-                height="18"
+                width="16"
+                height="16"
                 fill="none"
                 stroke="currentColor"
                 stroke-width="2"
@@ -217,8 +190,8 @@
               <div class="mini-logo grad-icon">
                 <svg
                   viewBox="0 0 24 24"
-                  width="20"
-                  height="20"
+                  width="18"
+                  height="18"
                   fill="none"
                   stroke="#fff"
                   stroke-width="2"
@@ -356,326 +329,148 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;700;800&display=swap');
-
-.setup-page {
+  .setup-page {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  position: relative;
-  overflow: hidden;
 }
 
-/* 动态背景 */
-.bg-scene {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: radial-gradient(1200px 800px at 20% 10%, var(--bg-glow-1) 0%, transparent 55%), var(--bg-base);
-}
-
-.glow {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  opacity: 0.5;
-  animation: drift 16s ease-in-out infinite;
-}
-
-.glow-a {
-  width: 520px;
-  height: 520px;
-  top: -140px;
-  left: -120px;
-  background: radial-gradient(circle, rgba(233, 106, 60, 0.35), transparent 62%);
-}
-
-.glow-b {
-  width: 460px;
-  height: 460px;
-  bottom: -160px;
-  right: -100px;
-  background: radial-gradient(circle, rgba(245, 145, 63, 0.32), transparent 62%);
-  animation-delay: -5s;
-}
-
-.glow-c {
-  width: 300px;
-  height: 300px;
-  top: 40%;
-  left: 55%;
-  background: radial-gradient(circle, rgba(240, 112, 92, 0.22), transparent 60%);
-  animation-delay: -9s;
-}
-
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(36px, -28px) scale(1.1);
-  }
-}
-
-.grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 75%);
-  -webkit-mask-image: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.5), transparent 75%);
-}
-
-/* 漂浮音符 */
-.note {
-  position: absolute;
-  font-size: 30px;
-  color: var(--accent);
-  opacity: 0;
-  animation: floatNote 9s ease-in-out infinite;
-}
-
-.n1 {
-  top: 18%;
-  left: 12%;
-  animation-delay: 0s;
-}
-.n2 {
-  top: 62%;
-  left: 8%;
-  font-size: 24px;
-  animation-delay: -2s;
-}
-.n3 {
-  top: 26%;
-  right: 14%;
-  font-size: 26px;
-  animation-delay: -4s;
-}
-.n4 {
-  top: 72%;
-  right: 10%;
-  font-size: 34px;
-  animation-delay: -6s;
-}
-.n5 {
-  top: 44%;
-  left: 78%;
-  animation-delay: -3s;
-}
-.n6 {
-  top: 50%;
-  left: 40%;
-  font-size: 22px;
-  animation-delay: -7s;
-}
-
-@keyframes floatNote {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0);
-    opacity: 0;
-  }
-  50% {
-    transform: translateY(-26px) rotate(12deg);
-    opacity: 0.55;
-  }
-}
-
-/* Shell */
 .setup-shell {
-  position: relative;
-  z-index: 2;
   display: grid;
-  grid-template-columns: 0.95fr 1.05fr;
+  grid-template-columns: 0.9fr 1.1fr;
   width: 100%;
-  max-width: 980px;
-  min-height: 600px;
-  border-radius: 28px;
+  max-width: 920px;
+  min-height: 520px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: var(--shadow-2);
+  box-shadow: var(--shadow-1);
   border: 1px solid var(--border);
   background: var(--surface);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 /* 品牌面板 */
 .brand-panel {
-  position: relative;
-  padding: 48px 44px;
-  background: linear-gradient(165deg, #1c1d20 0%, #2a241f 100%);
-  color: #fff;
+  padding: 44px 40px;
+  background: var(--surface-solid);
+  border-right: 1px solid var(--border);
+  color: var(--text-1);
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  overflow: hidden;
-}
-
-.brand-panel::after {
-  content: '';
-  position: absolute;
-  right: -90px;
-  top: -90px;
-  width: 280px;
-  height: 280px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  filter: blur(30px);
+  gap: 20px;
 }
 
 .brand-head {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .brand-logo {
-  width: 64px;
-  height: 64px;
-  border-radius: 18px;
-  background: var(--accent-grad);
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 12px 30px -8px rgba(233, 106, 60, 0.6);
-  animation: pop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
 .brand-head h1 {
   margin: 0;
-  font-size: 27px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  background: none;
-  -webkit-text-fill-color: currentColor;
-  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
 }
 
 .brand-sub {
-  margin: 3px 0 0;
-  font-size: 11px;
-  letter-spacing: 2.5px;
-  opacity: 0.82;
+  margin: 2px 0 0;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: var(--text-3);
 }
 
 .brand-desc {
-  position: relative;
-  z-index: 1;
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.7;
-  opacity: 0.94;
+  color: var(--text-2);
 }
 
 .feature-list {
-  position: relative;
-  z-index: 1;
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  opacity: 0;
-  animation: fadeStagger 0.7s ease forwards;
+  gap: 14px;
 }
 
 .feature-list li {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .feature-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 11px;
-  background: rgba(255, 255, 255, 0.16);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent-soft);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 16px;
+  font-size: 14px;
 }
 
 .feature-list strong {
   display: block;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-1);
 }
 
-.feature-list li span:last-child {
+.feature-list li div span:last-child {
+  display: block;
   font-size: 12px;
-  opacity: 0.86;
+  color: var(--text-3);
   line-height: 1.5;
 }
 
-/* 均衡器 */
-.eq {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 34px;
-  margin-top: 4px;
-  opacity: 0.75;
-}
-
-.eq span {
-  width: 5px;
-  border-radius: 3px;
-  background: var(--accent-grad);
-  animation: eqBounce 1.2s ease-in-out infinite;
-  height: 20%;
-}
-
-@keyframes eqBounce {
-  0%,
-  100% {
-    height: 18%;
-  }
-  50% {
-    height: 100%;
-  }
-}
-
 .brand-footer {
-  position: relative;
-  z-index: 1;
   margin-top: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
   font-size: 12px;
+  color: var(--text-3);
 }
 
 .brand-footer a {
-  color: #fff;
+  color: var(--text-2);
   text-decoration: none;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
+  transition: color 0.15s ease;
+}
+
+.brand-footer a:hover {
+  color: var(--accent);
 }
 
 .copyright {
-  opacity: 0.82;
+  color: var(--text-3);
 }
 
 /* 表单面板 */
 .form-panel {
-  padding: 44px 46px;
+  padding: 40px 42px;
   display: flex;
   flex-direction: column;
 }
@@ -684,7 +479,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
 .step {
@@ -693,40 +488,36 @@ onUnmounted(() => {
   gap: 8px;
   cursor: pointer;
   color: var(--text-3);
-  transition: color 0.2s ease;
+  transition: color 0.15s ease;
 }
 
 .step-dot {
-  width: 26px;
-  height: 26px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  font-weight: 700;
-  border: 1.5px solid var(--border-strong);
+  font-weight: 600;
+  border: 1px solid var(--border-strong);
   color: var(--text-3);
-  transition: all 0.25s ease;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
-.step.active .step-dot {
-  color: #fff;
-  border-color: transparent;
-  background: var(--accent);
-  box-shadow: 0 6px 16px -4px var(--accent-soft);
-  transform: scale(1.12);
-}
-
+.step.active .step-dot,
 .step.done .step-dot {
+  background: var(--accent);
+  border-color: var(--accent);
   color: #fff;
-  border-color: transparent;
-  background: var(--accent-2);
 }
 
 .step-label {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .step.active .step-label {
@@ -734,15 +525,15 @@ onUnmounted(() => {
 }
 
 .step-line {
-  width: 34px;
+  width: 28px;
   height: 2px;
   border-radius: 2px;
   background: var(--border);
-  transition: background 0.25s ease;
+  transition: background-color 0.15s ease;
 }
 
 .step-line.filled {
-  background: var(--accent-2);
+  background: var(--accent);
 }
 
 .step-body {
@@ -756,138 +547,53 @@ onUnmounted(() => {
   flex-direction: column;
 }
 
-/* 动画 */
-.enter {
-  animation: panelEnter 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.enterup {
-  opacity: 0;
-  animation: upIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes panelEnter {
-  from {
-    opacity: 0;
-    transform: translateX(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes upIn {
-  from {
-    opacity: 0;
-    transform: translateY(18px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* 欢迎 */
 .panel-welcome {
   align-items: center;
   justify-content: center;
   text-align: center;
-  gap: 18px;
-}
-
-.logo-halo {
-  position: relative;
-  width: 108px;
-  height: 108px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.logo-halo::before {
-  content: '';
-  position: absolute;
-  inset: -14px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--accent-soft) 0%, transparent 70%);
-  animation: pulse 2.6s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(0.85);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 1;
-  }
+  gap: 14px;
 }
 
 .logo {
-  width: 100%;
-  height: 100%;
-  border-radius: 30px;
-  background: var(--accent-grad);
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 18px 44px -10px rgba(233, 106, 60, 0.65);
 }
 
 .welcome-title {
   margin: 0;
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 800;
-  background: var(--accent-grad);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-}
-
-.typewriter {
-  min-height: 26px;
-  font-size: 18px;
-  font-weight: 700;
   color: var(--text-1);
 }
 
-.caret {
-  display: inline-block;
-  width: 2px;
-  height: 1.1em;
-  margin-left: 2px;
-  background: var(--accent);
-  vertical-align: text-bottom;
-  animation: blink 1s steps(2) infinite;
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+.typewriter {
+  min-height: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-1);
 }
 
 .welcome-desc {
   margin: 0;
-  max-width: 320px;
-  font-size: 14px;
-  color: var(--text-2);
+  max-width: 300px;
+  font-size: 13px;
+  color: var(--text-3);
   line-height: 1.7;
 }
 
 .big-btn {
   width: 100%;
-  height: 48px;
-  margin-top: 8px;
-  font-size: 15px;
+  height: 44px;
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .big-btn :deep(span) {
@@ -897,13 +603,13 @@ onUnmounted(() => {
 }
 
 .skip-link {
-  margin-top: 14px;
+  margin-top: 12px;
   border: none;
   background: transparent;
   color: var(--text-3);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  transition: color 0.18s ease;
+  transition: color 0.15s ease;
 }
 
 .skip-link:hover {
@@ -913,7 +619,7 @@ onUnmounted(() => {
 /* 亮点 */
 .panel-title {
   margin: 0;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--text-1);
 }
@@ -926,37 +632,34 @@ onUnmounted(() => {
 
 .panel-features {
   justify-content: center;
-  gap: 22px;
+  gap: 18px;
 }
 
 .feat-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .feat-card {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 16px;
+  gap: 12px;
+  padding: 14px;
   border: 1px solid var(--border);
-  border-radius: 16px;
+  border-radius: 12px;
   background: var(--surface);
-  transition: all 0.22s ease;
+  transition: border-color 0.15s ease;
 }
 
 .feat-card:hover {
   border-color: var(--accent);
-  background: var(--accent-soft);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px -10px var(--accent-soft);
 }
 
 .feat-icon {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -968,7 +671,7 @@ onUnmounted(() => {
 .feat-text strong {
   display: block;
   color: var(--text-1);
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .feat-text span {
@@ -986,49 +689,48 @@ onUnmounted(() => {
 .form-top {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .mini-logo {
-  width: 46px;
-  height: 46px;
-  border-radius: 14px;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
 }
 
 .field-label {
   display: block;
-  margin: 12px 0 8px;
+  margin: 12px 0 6px;
   color: var(--text-2);
   font-size: 13px;
   font-weight: 500;
 }
 
 .submit-btn {
-  margin-top: 22px;
+  margin-top: 18px;
 }
 
 @media (max-width: 860px) {
   .setup-shell {
     grid-template-columns: 1fr;
-    max-width: 470px;
+    max-width: 460px;
     min-height: auto;
   }
 
   .brand-panel {
-    padding: 32px 28px;
+    padding: 28px 24px;
   }
 
-  .feature-list,
-  .eq {
+  .feature-list {
     display: none;
   }
 
   .brand-footer {
-    margin-top: 12px;
+    margin-top: 10px;
   }
 
   .form-panel {
-    padding: 32px 28px;
+    padding: 28px 24px;
   }
 }
 </style>

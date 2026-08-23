@@ -51,18 +51,22 @@ function onToggle() {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text-2);
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .theme-toggle:hover {
-  color: var(--accent);
+  color: var(--text-1);
   background: var(--surface-hover);
+  border-color: var(--border-strong);
 }
 </style>
