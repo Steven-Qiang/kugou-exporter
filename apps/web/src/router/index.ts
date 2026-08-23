@@ -1,46 +1,45 @@
-import type { UserInfo } from '@/types';
 import { createRouter, createWebHashHistory } from 'vue-router';
-import request from '@/utils/request';
-
-let cachedUserInfo: UserInfo | null = null;
-
-export function getCachedUserInfo() {
-  return cachedUserInfo;
-}
+import { useAuth } from '@/stores/auth';
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes: [
+    { path: '/setup', name: 'Setup', component: () => import('@/views/SetupView.vue') },
+    { path: '/login', name: 'Login', component: () => import('@/views/LoginView.vue') },
     {
+      // 登录后的应用壳：左侧边导航 + 内容区
       path: '/',
-      redirect: '/playlist',
-    },
-    {
-      path: '/login',
-      name: 'Login',
-      component: () => import('@/views/LoginView.vue'),
-    },
-    {
-      path: '/playlist',
-      name: 'Playlist',
-      component: () => import('@/views/PlaylistView.vue'),
+      component: () => import('@/components/AppLayout.vue'),
+      children: [
+        { path: '', redirect: '/accounts' },
+        { path: 'accounts', name: 'Accounts', component: () => import('@/views/AccountsView.vue') },
+        { path: 'playlist', name: 'Playlist', component: () => import('@/views/PlaylistView.vue') },
+        { path: 'settings', name: 'Settings', component: () => import('@/views/SettingsView.vue') },
+      ],
     },
   ],
 });
 
-router.beforeEach(async (to, from, next) => {
-  if (to.path !== '/login') {
-    try {
-      const res = await request.get<UserInfo>('/user/detail');
-      cachedUserInfo = res.data;
-      next();
-    } catch {
-      cachedUserInfo = null;
-      next('/login');
-    }
-  } else {
-    next();
+router.beforeEach(async (to) => {
+  const { loadSetupStatus, fetchMe, user } = useAuth();
+  // 首次启动：没有任何用户 -> 引导创建管理员
+  const needs = await loadSetupStatus();
+  if (needs) {
+    return to.name === 'Setup' ? true : { name: 'Setup' };
   }
+  // 已初始化，不再显示 setup
+  if (to.name === 'Setup') return { name: 'Accounts' };
+  // 登录页：已登录则去账号管理
+  if (to.name === 'Login' && user.value) return { name: 'Accounts' };
+  // 演示模式：放行浏览歌单
+  if (!user.value) {
+    const ok = await fetchMe();
+    if (!ok) {
+      // 未登录：仅允许 login / setup
+      if (to.name !== 'Login' && to.name !== 'Setup') return { name: 'Login' };
+    }
+  }
+  return true;
 });
 
 export default router;

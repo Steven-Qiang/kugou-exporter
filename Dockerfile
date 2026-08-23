@@ -1,10 +1,10 @@
 # Build stage
-FROM node:24.12.0-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm（锁定到 packageManager 版本，避免新版 pnpm 通过 @pnpm/exe 委托到 10.x 触发校验错误）
+RUN npm install -g pnpm@10.29.3
 
 # Copy all source code
 COPY . .
@@ -12,28 +12,30 @@ COPY . .
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build only Linux version
-RUN pnpm build:nexe -- --linux-only
+# Build (web + launcher)
+RUN pnpm build
 
 # Production stage
-FROM ubuntu:22.04
+FROM node:24-alpine
 
 WORKDIR /app
 
-# Copy executable from builder
-COPY --from=builder /app/dist/kugou-exporter-linux-v* ./kugou-exporter
-
-# Make executable
-RUN chmod +x ./kugou-exporter
+# Copy node_modules + built output from builder
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/pnpm-lock.yaml .
+COPY --from=builder /app/apps/launcher/dist ./apps/launcher/dist
+COPY --from=builder /app/apps/web/dist ./apps/web/dist
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-workspace.yaml ./pnpm-workspace.yaml
 
 # Expose port
 EXPOSE 3000
 
-# Create volume for config
+# Create volume for data (SQLite)
 VOLUME ["/app/data"]
 
-# Set environment variable for config path
-ENV CONFIG_PATH=/app/data/config.yaml
+# Set environment variables
+ENV KUGOU_DB_PATH=/app/data/kugou.db
 
 # Start the application
-CMD ["./kugou-exporter"]
+CMD ["node", "apps/launcher/dist/index.cjs"]

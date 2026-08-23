@@ -1,239 +1,113 @@
 <template>
   <div class="login-page">
-    <div class="login-box">
-      <div class="login-header">
-        <h1>酷狗音乐歌单导出</h1>
-        <p>导出歌单为JSON格式，兼容XiaoMusic</p>
+    <div class="login-card">
+      <div class="login-logo">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M9 18V5l12-2v13" />
+          <circle cx="6" cy="18" r="3" />
+          <circle cx="18" cy="16" r="3" />
+        </svg>
       </div>
 
-      <div class="login-tabs">
-        <div class="tab-nav">
-          <button :class="{ active: activeTab === 'phone' }" @click="activeTab = 'phone'">
-            手机登录
-          </button>
-          <button :class="{ active: activeTab === 'qr' }" @click="activeTab = 'qr'">
-            扫码登录
-          </button>
-        </div>
+      <h1 class="login-title">
+        酷狗歌单导出
+      </h1>
+      <p class="login-sub">
+        KUGOU EXPORTER
+      </p>
 
-        <div class="tab-content">
-          <div v-show="activeTab === 'phone'" class="tab-pane">
-            <div class="form-group">
-              <label>手机号</label>
-              <el-input v-model="phoneForm.phone" placeholder="请输入手机号" size="large" />
-            </div>
-            <div class="form-group">
-              <label>验证码</label>
-              <div class="code-input">
-                <el-input v-model="phoneForm.code" placeholder="请输入验证码" size="large" />
-                <el-button :disabled="countdown > 0" size="large" @click="sendCode">
-                  {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
-                </el-button>
-              </div>
-            </div>
-            <el-button type="primary" size="large" :loading="loading" class="submit-btn" @click="handlePhoneLogin">
-              登录
-            </el-button>
-          </div>
+      <form class="login-form" @submit.prevent="submit">
+        <label class="field-label" for="login-username">用户名</label>
+        <el-input id="login-username" v-model="form.username" placeholder="请输入用户名" size="large" :prefix-icon="User" />
 
-          <div v-show="activeTab === 'qr'" class="tab-pane qr-pane">
-            <div v-if="loading" class="qr-loading">
-              <el-icon class="is-loading" :size="50">
-                <loading-icon />
-              </el-icon>
-              <p>正在生成二维码...</p>
-            </div>
-            <template v-else-if="qrCode">
-              <div class="qr-image">
-                <img :src="qrCode" alt="QR Code">
-              </div>
-              <p class="qr-hint">
-                请使用酷狗音乐APP扫码登录
-              </p>
-              <el-button text type="primary" @click="generateQR">
-                刷新二维码
-              </el-button>
-            </template>
-          </div>
-        </div>
+        <label class="field-label" for="login-password">密码</label>
+        <el-input
+          id="login-password"
+          v-model="form.password"
+          type="password"
+          show-password
+          placeholder="请输入密码"
+          size="large"
+          :prefix-icon="Lock"
+          @keyup.enter="submit"
+        />
 
-        <div class="login-footer">
-          <a href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank">GitHub</a>
-          <span>@ Steven Qiang</span>
-        </div>
+        <el-button class="login-btn grad-btn" type="primary" size="large" native-type="submit" :loading="loading">
+          登录
+        </el-button>
+      </form>
+
+      <button class="demo-link" type="button" @click="enterDemo">
+        {{ demoEnabled ? '退出演示模式' : '无需登录，进入演示模式' }}
+      </button>
+
+      <div class="login-foot">
+        <a href="https://github.com/Steven-Qiang/kugou-exporter" target="_blank" rel="noopener">GitHub</a>
+        <span>© Steven-Qiang</span>
       </div>
     </div>
-
-    <el-dialog v-model="showAccountSelect" title="选择账号" width="400px" :close-on-click-modal="false">
-      <div class="account-list">
-        <div
-          v-for="account in accountList"
-          :key="account.userid"
-          class="account-item"
-          @click="selectAccount(account.userid)"
-        >
-          <el-avatar :src="replaceImageSize(account.pic, 100)" :size="50" />
-          <div class="account-info">
-            <div class="account-name">
-              {{ account.nickname }}
-            </div>
-            <div class="account-username">
-              {{ account.username }}
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { QRCheckData, QRCreateData, QRKeyData } from '@/types';
-import { Loading as LoadingIcon } from '@element-plus/icons-vue';
+import { Lock, User } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import { reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { replaceImageSize } from '@/utils/image';
-import request from '@/utils/request';
+import { authApi } from '@/api';
+import { useAuth } from '@/stores/auth';
+import { disableDemo, enableDemo, isDemo } from '@/utils/mock';
 
 const router = useRouter();
+const { login } = useAuth();
+const demoEnabled = ref(isDemo());
 
-const activeTab = ref('phone');
 const loading = ref(false);
-const countdown = ref(0);
-const qrCode = ref('');
-const qrKey = ref('');
-let qrTimer: number | null = null;
+const form = reactive({ username: '', password: '' });
 
-watch(activeTab, (newTab) => {
-  if (newTab === 'qr') {
-    if (!qrCode.value) {
-      generateQR();
-    } else {
-      checkQRStatus();
-    }
-  } else if (qrTimer) {
-    clearInterval(qrTimer);
-    qrTimer = null;
-  }
-});
-
-const phoneForm = reactive({
-  phone: '',
-  code: '',
-});
-
-const accountList = ref<any[]>([]);
-const showAccountSelect = ref(false);
-
-async function sendCode() {
-  if (!phoneForm.phone) {
-    ElMessage.warning('请输入手机号');
+function enterDemo() {
+  if (demoEnabled.value) {
+    disableDemo();
+    demoEnabled.value = false;
+    ElMessage.success('已退出演示模式');
+    router.replace('/login');
     return;
   }
-  try {
-    await request.get('/captcha/sent', { params: { mobile: phoneForm.phone } });
-    ElMessage.success('验证码已发送');
-    countdown.value = 60;
-    const timer = setInterval(() => {
-      countdown.value--;
-      if (countdown.value <= 0) clearInterval(timer);
-    }, 1000);
-  } catch (error) {
-    console.error(error);
-  }
+  enableDemo();
+  demoEnabled.value = true;
+  ElMessage.success('已进入演示模式');
+  router.push('/playlist');
 }
 
-async function handlePhoneLogin() {
-  if (!phoneForm.phone || !phoneForm.code) {
+async function submit() {
+  if (!form.username || !form.password) {
     ElMessage.warning('请填写完整信息');
     return;
   }
   loading.value = true;
   try {
-    const res = await request.get('/login/cellphone', {
-      params: { mobile: phoneForm.phone, code: phoneForm.code },
-    });
-    if (res.status === 1) {
-      ElMessage.success('登录成功');
-      router.push('/playlist');
-    }
-  } catch (error: any) {
-    if (error.response?.data?.data?.info_list) {
-      accountList.value = error.response.data.data.info_list;
-      showAccountSelect.value = true;
-      loading.value = false;
-    } else {
-      console.error(error);
-      loading.value = false;
-    }
-  }
-}
-
-async function selectAccount(userid: number) {
-  showAccountSelect.value = false;
-  loading.value = true;
-  try {
-    await request.get('/login/cellphone', {
-      params: { mobile: phoneForm.phone, code: phoneForm.code, userid },
-    });
+    await login(form.username, form.password);
+    disableDemo();
+    demoEnabled.value = false;
     ElMessage.success('登录成功');
-    router.push('/playlist');
-  } catch (error) {
-    console.error(error);
-  } finally {
+    router.replace('/accounts');
+  } catch (e: any) {
+    ElMessage.error(e?.response?.data?.error || '登录失败');
     loading.value = false;
   }
 }
 
-async function generateQR() {
-  loading.value = true;
-  try {
-    const keyRes = await request.get<QRKeyData>('/login/qr/key', {
-      params: { timestamp: Date.now() },
-    });
-    qrKey.value = keyRes.data.qrcode;
-    const qrRes = await request.get<QRCreateData>('/login/qr/create', {
-      params: { key: qrKey.value, qrimg: true, timestamp: Date.now() },
-    });
-    qrCode.value = qrRes.data.base64;
-    checkQRStatus();
-  } catch (error) {
-    console.error(error);
-  } finally {
-    loading.value = false;
-  }
-}
-
-async function checkQRStatus() {
-  if (qrTimer) clearInterval(qrTimer);
-  qrTimer = setInterval(async () => {
-    try {
-      const res = await request.get<QRCheckData>('/login/qr/check', {
-        params: { key: qrKey.value, timestamp: Date.now() },
-      });
-      if (res.data.status === 4) {
-        clearInterval(qrTimer!);
-        qrTimer = null;
-        ElMessage.success('登录成功');
-        router.push('/playlist');
-      } else if (res.data.status === 0) {
-        clearInterval(qrTimer!);
-        qrTimer = null;
-        ElMessage.error('二维码已过期');
-        qrCode.value = '';
-      }
-    } catch {
-      clearInterval(qrTimer!);
-      qrTimer = null;
-    }
-  }, 2000);
-}
-
-onUnmounted(() => {
-  if (qrTimer) {
-    clearInterval(qrTimer);
-    qrTimer = null;
-  }
+authApi.setupStatus().then((st) => {
+  if (st.needsSetup) router.replace('/setup');
 });
 </script>
 
@@ -241,211 +115,102 @@ onUnmounted(() => {
   .login-page {
   min-height: 100vh;
   display: flex;
+  align-items: center;
   justify-content: center;
-  background: #f0f2f5;
-  padding: 80px 20px 20px;
+  padding: 32px 16px;
 }
 
-.login-box {
+.login-card {
   width: 100%;
-  max-width: 420px;
-  height: fit-content;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-}
-
-.login-header {
-  padding: 40px 30px 30px;
-  text-align: center;
-  background: #fff;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.login-header h1 {
-  margin: 0 0 10px;
-  font-size: 28px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.login-header p {
-  margin: 0;
-  font-size: 14px;
-  color: #8c8c8c;
-}
-
-.login-tabs {
-  padding: 30px;
-}
-
-.tab-nav {
+  max-width: 380px;
+  padding: 40px 36px 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow-1);
   display: flex;
-  gap: 8px;
-  margin-bottom: 30px;
-  background: #f5f7fa;
-  padding: 4px;
-  border-radius: 8px;
+  flex-direction: column;
+  align-items: center;
 }
 
-.tab-nav button {
-  flex: 1;
-  padding: 10px;
+.login-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-title {
+  margin: 18px 0 2px;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.login-sub {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--text-3);
+}
+
+.login-form {
+  width: 100%;
+  margin-top: 26px;
+}
+
+.field-label {
+  display: block;
+  margin: 14px 0 6px;
+  color: var(--text-2);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 24px;
+  height: 42px;
+  font-weight: 600;
+}
+
+.demo-link {
+  margin-top: 18px;
   border: none;
   background: transparent;
-  color: #606266;
-  font-size: 14px;
+  color: var(--text-3);
+  font-size: 12px;
   cursor: pointer;
-  border-radius: 6px;
-  transition: all 0.3s;
+  transition: color 0.15s ease;
 }
 
-.tab-nav button.active {
-  background: #fff;
-  color: #409eff;
-  font-weight: 500;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.demo-link:hover {
+  color: var(--accent);
 }
 
-.tab-content {
-  height: 280px;
-}
-
-.tab-pane {
-  animation: fadeIn 0.3s;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #303133;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.code-input {
-  display: flex;
-  gap: 10px;
-}
-
-.code-input .el-input {
-  flex: 1;
-}
-
-.submit-btn {
+.login-foot {
   width: 100%;
-  margin-top: 10px;
-}
-
-.qr-pane {
+  margin-top: 26px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-}
-
-.qr-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 15px;
-  color: #909399;
-}
-
-.qr-image {
-  width: 200px;
-  height: 200px;
-  padding: 15px;
-  background: #fff;
-  border: 2px solid #e4e7ed;
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.qr-image img {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.qr-hint {
-  margin: 20px 0 10px;
-  color: #606266;
-  font-size: 14px;
-}
-
-.login-footer {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid #e8e8e8;
-  display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-  color: #8c8c8c;
+  font-size: 12px;
+  color: var(--text-3);
 }
 
-.login-footer a {
-  color: #409eff;
+.login-foot a {
+  color: var(--text-2);
   text-decoration: none;
+  transition: color 0.15s ease;
 }
 
-.login-footer a:hover {
-  text-decoration: underline;
-}
-
-.account-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.account-item {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  padding: 15px;
-  border: 1px solid #e8e8e8;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.account-item:hover {
-  border-color: #409eff;
-  background: #ecf5ff;
-}
-
-.account-info {
-  flex: 1;
-}
-
-.account-name {
-  font-size: 15px;
-  font-weight: 500;
-  color: #303133;
-  margin-bottom: 4px;
-}
-
-.account-username {
-  font-size: 13px;
-  color: #8c8c8c;
+.login-foot a:hover {
+  color: var(--accent);
 }
 </style>

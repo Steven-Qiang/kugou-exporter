@@ -1,16 +1,246 @@
+/* ==========================================================================
+   设计令牌 —— 克制现代风格（中性底色 + 单一低饱和靛蓝强调色）
+   原则：无渐变堆砌 / 无发光 / 无装饰动画，只保留清晰的层级与轻过渡。
+   变量名与旧版兼容，排除模块（歌单 / 酷狗账号登录 / 设置）仅换肤不影响布局。
+   ========================================================================== */
+
+:root {
+  --bg-base: #fafafb;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --surface-hover: #f2f2f4;
+  --surface-muted: #eef0f2;
+  --border: rgba(0, 0, 0, 0.07);
+  --border-strong: rgba(0, 0, 0, 0.13);
+  --text-1: #1b1b1f;
+  --text-2: #5d5d66;
+  --text-3: #96969f;
+  --accent: #5e6ad2;
+  --accent-2: #7781da;
+  --accent-3: #4954c0;
+  --accent-soft: rgba(94, 106, 210, 0.08);
+  --accent-grad: #5e6ad2;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.08);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --glass-blur: 12px;
+  --font-display:
+    'Inter', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+
+  color-scheme: light;
+
+  /* ---- Element Plus ---- */
+  --el-color-primary: #5e6ad2;
+  --el-color-primary-light-3: #8e97df;
+  --el-color-primary-light-5: #aeb4e8;
+  --el-color-primary-light-7: #ced2f1;
+  --el-color-primary-light-8: #dee1f6;
+  --el-color-primary-light-9: #eef0fa;
+  --el-color-primary-dark-2: #4b54a8;
+  --el-border-radius-base: 8px;
+  --el-text-color-primary: #1b1b1f;
+  --el-text-color-regular: #5d5d66;
+  --el-text-color-secondary: #96969f;
+  --el-fill-color-blank: #ffffff;
+  --el-bg-color: #ffffff;
+  --el-bg-color-overlay: #ffffff;
+}
+
+html[data-theme='dark'] {
+  --bg-base: #0a0a0b;
+  --surface: #141517;
+  --surface-solid: #101112;
+  --surface-hover: #1d1e20;
+  --surface-muted: #18191b;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --text-1: #ededee;
+  --text-2: #a3a3a8;
+  --text-3: #6e6e73;
+  --accent: #6f7ae0;
+  --accent-2: #8a93ea;
+  --accent-3: #5d69cf;
+  --accent-soft: rgba(111, 122, 224, 0.12);
+  --accent-grad: #6f7ae0;
+  --shadow-1: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-2: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  --el-color-primary: #6f7ae0;
+  --el-color-primary-light-3: #4e57a1;
+  --el-color-primary-light-5: #383e73;
+  --el-color-primary-light-7: #21244a;
+  --el-color-primary-light-8: #16182f;
+  --el-color-primary-light-9: #0c0d19;
+  --el-color-primary-dark-2: #8b94ea;
+  --el-text-color-primary: #ededee;
+  --el-text-color-regular: #a3a3a8;
+  --el-text-color-secondary: #6e6e73;
+  --el-fill-color-blank: #101112;
+  --el-bg-color: #101112;
+  --el-bg-color-overlay: #1a1b1d;
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  height: 100%;
+}
+
+html {
+  scrollbar-gutter: stable;
+}
+
+body {
+  font-family:
+    'Inter',
+    'HarmonyOS Sans SC',
+    'PingFang SC',
+    'Microsoft YaHei',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  color: var(--text-1);
+  background: var(--bg-base);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  line-height: 1.55;
 }
 
 #app {
   width: 100%;
   min-height: 100vh;
+}
+
+/* ==========================================================================
+   工具类
+   ========================================================================== */
+
+/* 玻璃卡片（保留定义，兼容旧引用） */
+.glass {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-1);
+}
+
+/* 强调文字（纯色，不使用渐变） */
+.grad-text {
+  color: var(--accent);
+}
+
+/* 主按钮：实色，无渐变无发光 */
+.grad-btn.el-button--primary {
+  background: var(--accent);
+  border: 1px solid transparent;
+  color: #fff;
+  transition:
+    background-color 0.15s ease,
+    filter 0.15s ease;
+}
+
+.grad-btn.el-button--primary:hover {
+  filter: brightness(1.08);
+}
+
+.grad-btn.el-button--primary:active {
+  filter: brightness(0.95);
+}
+
+/* 图标徽标：实色 */
+.grad-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 10px;
+}
+
+/* ==========================================================================
+   Element Plus 质感统一
+   ========================================================================== */
+
+.el-input__wrapper {
+  transition:
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.el-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.el-dialog {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+
+.el-dialog__body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* ==========================================================================
+   滚动条
+   ========================================================================== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-3);
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ==========================================================================
+   工具类（旧兼容）
+   ========================================================================== */
+.flex {
+  display: flex;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.muted {
+  color: var(--text-3);
+}
+
+/* 路由切换：淡入 + 轻微上浮 */
+.fade-enter-active,
+.fade-leave-active {
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease;
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }

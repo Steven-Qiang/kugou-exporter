@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   kugou-exporter:
-    image: stevenxuq/kugou-exporter:latest
+    # 本地构建：项目未发布时无需从 Docker Hub 拉取（发布后可直接 `docker pull stevenxuq/kugou-exporter`）
+    build: .
     container_name: kugou-exporter
     ports:
       - '3000:3000'
