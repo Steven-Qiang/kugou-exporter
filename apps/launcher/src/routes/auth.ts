@@ -148,6 +148,10 @@ export function attachAuthRoutes(app: Express): void {
       return;
     }
     const id = Number(req.params.id);
+    if (id === req.userId) {
+      res.status(400).json({ error: '不能重置自己的密码，请使用「修改密码」' });
+      return;
+    }
     const target = findById(id);
     if (!target) {
       res.status(404).json({ error: '用户不存在' });

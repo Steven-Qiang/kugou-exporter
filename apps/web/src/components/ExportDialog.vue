@@ -83,17 +83,14 @@
 
     <!-- Step: doing export -->
     <div v-if="exporting" class="export-progress">
-      <div class="progress-ring" :style="{ '--p': exportProgress }">
-        <span class="progress-num">{{ exportProgress }}%</span>
-      </div>
+      <div class="spinner" aria-hidden="true" />
       <div class="progress-info">
         <div class="progress-status">
-          {{ exportStatus }}
+          正在导出「{{ playlistName }}」…
         </div>
-        <div v-if="exportDetail.totalSongs > 0" class="progress-detail">
-          共 {{ exportDetail.totalSongs }} 首，已处理 {{ exportDetail.fetchedCount }} 首
-          <span v-if="exportDetail.currentSong">· 当前：{{ exportDetail.currentSong }}</span>
-        </div>
+        <p class="progress-hint">
+          服务端正在拉取歌单并生成内容，稍候片刻
+        </p>
       </div>
     </div>
 
@@ -141,7 +138,7 @@
       <el-form-item label="服务器地址">
         <el-input v-model="form.serverUrl" placeholder="http://127.0.0.1:3000" />
         <p class="form-tip">
-          本项目启动后的服务地址（本机 / 局域网 / 公网 / Docker），播放时需保持服务器运行
+          本项目启动后的服务地址（本机 / 局域网 / 公网 / Docker），播放时需保持服务器运行；已保存的设置可在「设置」页修改
         </p>
       </el-form-item>
       <el-form-item label="音质">
@@ -177,11 +174,21 @@
     <div v-else class="history-list">
       <div v-for="item in history" :key="item.id" class="history-item">
         <div class="history-meta">
-          <div class="history-title">
-            {{ item.playlistName || '歌单' }}
+          <div class="history-title-row">
+            <span class="history-title" :title="item.playlistName || '歌单'">
+              {{ item.playlistName || '歌单' }}
+            </span>
+            <span class="history-fmt">{{ fmtFormat(item.format) }}</span>
           </div>
           <div class="history-sub">
-            {{ fmtTime(item.createdAt) }} · {{ fmtFormat(item.format) }} · {{ item.count }} 首
+            <span class="nowrap">{{ fmtTime(item.createdAt) }}</span>
+            <span class="dot">·</span>
+            <span class="nowrap">{{ item.count }} 首</span>
+            <span class="nowrap">{{ fmtSize(item.content.length * 2) }}</span>
+            <template v-if="qualityLabel(item.quality)">
+              <span class="dot">·</span>
+              <span class="nowrap">{{ qualityLabel(item.quality) }}</span>
+            </template>
           </div>
         </div>
         <div class="history-actions">
@@ -199,13 +206,12 @@
 
 <script setup lang="ts">
 import type { ExportHistoryItem } from '@/api';
-import type { Song, XiaomusicPlaylist, XiaomusicSong } from '@/types';
 import { Clock, CopyDocument, Download } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { ElMessage } from 'element-plus';
 import useClipboard from 'vue-clipboard3';
-import { configApi, historyApi, kugouApi } from '@/api';
-import { buildCsvContent, buildProxyUrl, csvFilename, downloadText, jsonFilename } from '@/utils/export';
+import { configApi, exportApi, historyApi } from '@/api';
+import { csvFilename, downloadText, jsonFilename } from '@/utils/export';
 import request from '@/utils/request';
 import QualitySelect from './QualitySelect.vue';
 
@@ -214,24 +220,14 @@ const { toClipboard } = useClipboard();
 const visible = ref(false);
 const configVisible = ref(false);
 const historyVisible = ref(false);
-const songs = ref<Song[]>([]);
+const playlistId = ref(0);
 const playlistName = ref('');
 
 const form = ref({ serverUrl: '', quality: 'high' });
 const vipInfo = ref<{ nickname: string; vip_type: number } | null>(null);
 const exporting = ref(false);
-const exportProgress = ref(0);
-const exportStatus = ref('');
-const exportDetail = ref({
-  totalSongs: 0,
-  fetchedCount: 0,
-  currentSong: '',
-  successCount: 0,
-});
 const exportResult = ref('');
 const currentExportType = ref<'xiaomusic' | 'json' | 'csv'>('xiaomusic');
-const activeAccountId = ref<number | null>(null);
-const activeKgUserid = ref<string>('');
 const history = ref<ExportHistoryItem[]>([]);
 
 const dialogTitle = computed(() => {
@@ -254,11 +250,37 @@ function toggleHistory() {
 }
 
 function fmtTime(t: number): string {
-  return dayjs(t).format('MM-DD HH:mm');
+  return dayjs(t).format('YYYY-MM-DD HH:mm');
 }
 
 function fmtFormat(f: string): string {
   return f === 'xiaomusic' ? 'XiaoMusic' : f.toUpperCase();
+}
+
+function fmtSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+}
+
+const QUALITY_LABELS: Record<string, string> = {
+  piano: '钢琴',
+  acappella: '清唱',
+  subwoofer: '低音炮',
+  ancient: '古风',
+  surnay: '唤呐',
+  dj: 'DJ',
+  128: '128K',
+  320: '320K',
+  flac: '无损 (FLAC)',
+  high: '高品质 (HiRes)',
+  viper_atmos: 'Viper Atmos',
+  viper_clear: 'Viper Clear',
+  viper_tape: 'Viper Tape',
+};
+
+function qualityLabel(quality: string): string {
+  return QUALITY_LABELS[quality] || '';
 }
 
 function reuseHistory(item: ExportHistoryItem) {
@@ -282,17 +304,7 @@ async function loadConfig() {
     const cfg = await configApi.get();
     form.value.serverUrl = cfg.serverUrl;
     if (cfg.settings?.quality) form.value.quality = cfg.settings.quality;
-    // 激活账号 id（用于历史记录）+ 酷狗 userid（用于代理链接 uid）
-    try {
-      const accounts = await kugouApi.list();
-      const active = accounts.find((a) => a.active);
-      activeAccountId.value = active ? active.id : null;
-      activeKgUserid.value = active?.kgUserid || '';
-    } catch {
-      activeAccountId.value = null;
-      activeKgUserid.value = '';
-    }
-    // VIP 信息
+    // VIP 信息（仅用于配置弹窗展示）
     try {
       const me = await request.get<any>('/kugou/me');
       const u = me?.data?.data?.userinfo || me?.data?.data?.info || me?.data?.data || me?.data;
@@ -313,17 +325,14 @@ function showXiaomusicConfig() {
   configVisible.value = true;
 }
 
-function proxyUrlFor(song: Song): string {
-  return buildProxyUrl(form.value.serverUrl, song, form.value.quality, activeKgUserid.value || undefined);
-}
-
 async function confirmExport() {
-  if (!form.value.serverUrl) {
-    ElMessage.warning('请填写服务器地址');
-    return;
+  // 未配置服务器地址时使用默认本机地址，不再阻断导出（可在「设置」页修改）
+  if (!form.value.serverUrl.trim()) {
+    form.value.serverUrl = 'http://127.0.0.1:3000';
+    ElMessage.warning('未配置服务器地址，已使用默认地址 http://127.0.0.1:3000，可在「设置」页修改');
   }
   try {
-    await configApi.save({ serverUrl: form.value.serverUrl, quality: form.value.quality });
+    await configApi.save({ serverUrl: form.value.serverUrl.trim(), quality: form.value.quality });
   } catch {
     ElMessage.error('保存配置失败');
     return;
@@ -332,73 +341,36 @@ async function confirmExport() {
   await handleExport('xiaomusic');
 }
 
-async function recordHistory(format: string, count: number, content: string) {
-  try {
-    await historyApi.add({
-      kugouAccountId: activeAccountId.value,
-      playlistName: playlistName.value,
-      format,
-      count,
-      content,
-    });
-  } catch {
-    /* ignore */
-  }
-}
-
 async function handleExport(type: 'xiaomusic' | 'json' | 'csv') {
   currentExportType.value = type;
   exporting.value = true;
-  exportProgress.value = 0;
-  exportStatus.value = '正在生成...';
-  exportDetail.value = { totalSongs: songs.value.length, fetchedCount: 0, currentSong: '', successCount: 0 };
-
+  exportResult.value = '';
   try {
-    const sortedSongs = [...songs.value].sort((a, b) => a.fsort - b.fsort);
+    // 后端拉取歌单、生成内容并记录历史（导出与历史均以服务端为准）
+    const res = await exportApi.run({
+      listid: playlistId.value,
+      format: type,
+      quality: form.value.quality,
+      serverUrl: form.value.serverUrl.trim(),
+    });
 
-    if (type === 'xiaomusic') {
-      const xiaomusicSongs: XiaomusicSong[] = [];
-      for (let i = 0; i < sortedSongs.length; i++) {
-        const song = sortedSongs[i];
-        exportDetail.value.currentSong = song.name;
-        exportDetail.value.fetchedCount = i + 1;
-        xiaomusicSongs.push({ name: song.name, url: proxyUrlFor(song) });
-        exportProgress.value = Math.floor(((i + 1) / sortedSongs.length) * 100);
-        exportStatus.value = `正在生成链接 ${i + 1}/${sortedSongs.length}`;
-      }
-      const data: XiaomusicPlaylist[] = [{ name: playlistName.value, musics: xiaomusicSongs }];
-      exportResult.value = JSON.stringify(data, null, 2);
-    } else if (type === 'json') {
-      exportResult.value = JSON.stringify(sortedSongs, null, 2);
-      exportProgress.value = 100;
-    } else if (type === 'csv') {
-      const content = buildCsvContent(sortedSongs);
-      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = csvFilename(playlistName.value);
-      a.click();
-      URL.revokeObjectURL(url);
-      exportProgress.value = 100;
-      await recordHistory(type, sortedSongs.length, content);
-      ElMessage.success(`导出成功！共 ${sortedSongs.length} 首`);
-      // CSV 没有“结果预览”，直接结束导出态并关闭弹窗（否则 handleClose 的守卫会挡住关闭）
+    if (type === 'csv') {
+      // CSV 保持原交互：生成后直接下载，不展示结果预览
+      downloadText(res.content, csvFilename(playlistName.value), 'text/csv;charset=utf-8;');
+      ElMessage.success(`导出成功！共 ${res.count} 首`);
       exporting.value = false;
       handleClose();
       return;
     }
 
-    await recordHistory(type, sortedSongs.length, exportResult.value);
-    exportStatus.value = '导出完成！';
-    exportProgress.value = 100;
-    ElMessage.success(`导出成功！共 ${sortedSongs.length} 首`);
-  } catch (error) {
-    console.error(error);
-    ElMessage.error('导出失败');
-    handleClose();
-  } finally {
+    exportResult.value = res.content;
     exporting.value = false;
+    ElMessage.success(`导出成功！共 ${res.count} 首`);
+  } catch (e: any) {
+    console.error(e);
+    ElMessage.error(e?.response?.data?.error || '导出失败');
+    exporting.value = false;
+    handleClose();
   }
 }
 
@@ -422,20 +394,18 @@ function downloadResult() {
 
 function resetExport() {
   exportResult.value = '';
-  exportProgress.value = 0;
 }
 
 function handleClose() {
   if (!exporting.value) {
     exportResult.value = '';
-    exportProgress.value = 0;
     visible.value = false;
   }
 }
 
-async function open(songList: Song[], name: string) {
+async function open(listid: number, name: string) {
   visible.value = true;
-  songs.value = songList;
+  playlistId.value = listid;
   playlistName.value = name;
   exportResult.value = '';
   await loadConfig();
@@ -502,34 +472,23 @@ defineExpose({ open });
   flex-direction: column;
   align-items: center;
   gap: 18px;
-  padding: 20px 0 10px;
+  padding: 36px 0 28px;
 }
 
-.progress-ring {
-  position: relative;
-  width: 120px;
-  height: 120px;
+/* 加载中：旋转弧线（不做假百分比进度） */
+.spinner {
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: conic-gradient(var(--accent) calc(var(--p) * 1%), rgba(150, 150, 150, 0.14) 0);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin 0.8s linear infinite;
 }
 
-.progress-ring::before {
-  content: '';
-  position: absolute;
-  width: 96px;
-  height: 96px;
-  border-radius: 50%;
-  background: var(--surface-solid);
-}
-
-.progress-num {
-  position: relative;
-  font-weight: 700;
-  font-size: 22px;
-  color: var(--accent);
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .progress-info {
@@ -542,10 +501,10 @@ defineExpose({ open });
   color: var(--text-1);
 }
 
-.progress-detail {
-  font-size: 13px;
+.progress-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
   color: var(--text-3);
-  margin-top: 6px;
 }
 
 .export-result {
@@ -633,25 +592,65 @@ defineExpose({ open });
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 12px;
+  padding: 12px 14px;
   border: 1px solid var(--border);
   border-radius: 12px;
+}
+
+.history-meta {
+  min-width: 0;
+}
+
+.history-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .history-title {
   font-size: 14px;
   font-weight: 600;
   color: var(--text-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-fmt {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  white-space: nowrap;
 }
 
 .history-sub {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 5px;
   font-size: 12px;
   color: var(--text-3);
-  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.history-sub .nowrap {
+  white-space: nowrap;
+}
+
+.history-sub .dot {
+  color: var(--border-strong);
 }
 
 .history-actions {
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 .empty-history {

@@ -28,7 +28,7 @@
           </div>
           <el-empty
             v-if="!loading && filteredPlaylists.length === 0"
-            :description="hasAccount ? '没有匹配的歌单' : '尚未绑定酷狗账号，请先到账号管理页添加'"
+            :description="hasAccount ? '没有匹配的歌单' : '尚未绑定酷狗账号'"
             :image-size="72"
           />
         </div>
@@ -339,7 +339,7 @@ async function refreshSongs() {
 }
 
 function openExport() {
-  exportDialogRef.value?.open(songs.value, selectedPlaylist.value?.name || '');
+  exportDialogRef.value?.open(selectedPlaylist.value?.listid ?? 0, selectedPlaylist.value?.name || '');
 }
 
 function openSong(song: Song) {

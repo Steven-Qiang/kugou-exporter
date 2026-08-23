@@ -293,14 +293,22 @@ async function activate(id: number) {
 }
 
 async function remove(id: number) {
-  await ElMessageBox.confirm('确定删除该酷狗账号？', '提示', { type: 'warning' });
+  await ElMessageBox.confirm('确定删除该酷狗账号？', '提示', {
+    type: 'warning',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+  });
   await kugouApi.remove(id);
   ElMessage.success('已删除');
   await load();
 }
 
 async function openRename(acct: KugouAccount) {
-  const res: any = await ElMessageBox.prompt('新的昵称', '重命名', { inputValue: acct.nickname });
+  const res: any = await ElMessageBox.prompt('新的昵称', '重命名', {
+    inputValue: acct.nickname,
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+  });
   await kugouApi.rename(acct.id, res.value);
   await load();
 }

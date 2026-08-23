@@ -23,6 +23,7 @@ export interface ExportHistoryItem {
   format: string;
   count: number;
   content: string;
+  quality: string;
   createdAt: number;
 }
 
@@ -61,15 +62,14 @@ export const configApi = {
     request.post('/config/save', payload).then((r) => r.data),
 };
 
+export const exportApi = {
+  /** 后端导出：拉取歌单 → 生成内容 → 自动写入导出历史 */
+  run: (payload: { listid: number; format: 'xiaomusic' | 'json' | 'csv'; quality?: string; serverUrl?: string }) =>
+    request.post<{ success: boolean; content: string; count: number; playlistName: string }>('/export', payload).then((r) => r.data),
+};
+
 export const historyApi = {
   list: () => request.get<{ history: ExportHistoryItem[] }>('/history').then((r) => r.data.history),
-  add: (payload: {
-    kugouAccountId?: number | null;
-    playlistName: string;
-    format: string;
-    count: number;
-    content: string;
-  }) => request.post('/history', payload).then((r) => r.data),
   remove: (id: number) => request.delete(`/history/${id}`).then((r) => r.data),
 };
 

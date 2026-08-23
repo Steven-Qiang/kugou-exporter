@@ -85,6 +85,7 @@ if (tables.some((t) => t.name === 'settings')) {
 }
 if (tables.some((t) => t.name === 'export_history')) {
   ensureColumn('export_history', 'playlist_name', 'TEXT DEFAULT \'\'');
+  ensureColumn('export_history', 'quality', 'TEXT DEFAULT \'\'');
 }
 
 export function hasUsers(): boolean {

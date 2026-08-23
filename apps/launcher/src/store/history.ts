@@ -8,6 +8,7 @@ export interface HistoryRow {
   format: string;
   count: number;
   content: string;
+  quality: string;
   created_at: number;
 }
 
@@ -21,11 +22,12 @@ export function addHistory(
   playlistName: string,
   format: string,
   count: number,
-  content: string
+  content: string,
+  quality = ''
 ): void {
   db.prepare(
-    'INSERT INTO export_history(user_id, kugou_account_id, playlist_name, format, count, content, created_at) VALUES (?,?,?,?,?,?,?)'
-  ).run(userId, kugouAccountId, playlistName, format, count, content, Date.now());
+    'INSERT INTO export_history(user_id, kugou_account_id, playlist_name, format, count, content, quality, created_at) VALUES (?,?,?,?,?,?,?,?)'
+  ).run(userId, kugouAccountId, playlistName, format, count, content, quality, Date.now());
 }
 
 export function deleteHistory(id: number, userId: number): void {

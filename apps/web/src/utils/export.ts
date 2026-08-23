@@ -1,25 +1,4 @@
-import type { Song } from '@/types';
-import { formatDuration } from '@/utils/format';
-
 export type ExportFormat = 'xiaomusic' | 'json' | 'csv';
-
-export function buildProxyUrl(serverUrl: string, song: Song, quality: string, userid?: string | number): string {
-  const base = serverUrl.replace(/\/+$/, '');
-  const uid = userid ? `&uid=${encodeURIComponent(String(userid))}` : '';
-  return `${base}/proxy/song/url?hash=${song.hash}&quality=${quality}${uid}`;
-}
-
-export function buildCsvContent(songs: Song[]): string {
-  const headers = ['歌名', '歌手', '专辑', '时长'];
-  const rows = songs.map((song) => [
-    song.name,
-    song.singerinfo?.map((x) => x.name)?.join(', ') || '',
-    song.albuminfo?.name || '',
-    formatDuration(song.timelen),
-  ]);
-  const content = [headers, ...rows].map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
-  return `\uFEFF${content}`; // BOM for Excel UTF-8
-}
 
 export function downloadText(content: string, filename: string, mime = 'application/json'): void {
   const blob = new Blob([content], { type: mime });

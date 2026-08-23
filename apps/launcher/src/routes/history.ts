@@ -9,6 +9,7 @@ interface HistoryItem {
   format: string;
   count: number;
   content: string;
+  quality: string;
   createdAt: number;
 }
 
@@ -19,6 +20,7 @@ function toPublic(row: {
   format: string;
   count: number;
   content: string;
+  quality: string;
   created_at: number;
 }): HistoryItem {
   return {
@@ -28,6 +30,7 @@ function toPublic(row: {
     format: row.format,
     count: row.count,
     content: row.content,
+    quality: row.quality || '',
     createdAt: row.created_at,
   };
 }
@@ -45,7 +48,8 @@ export function attachHistoryRoutes(app: Express): void {
       body.playlistName || '',
       body.format || 'json',
       body.count || 0,
-      body.content || ''
+      body.content || '',
+      body.quality || ''
     );
     res.json({ success: true });
   });

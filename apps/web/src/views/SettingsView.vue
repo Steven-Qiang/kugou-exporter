@@ -5,57 +5,88 @@
       <p>管理你的登录密码与本应用的用户</p>
     </div>
 
-    <div class="settings-grid">
-      <!-- 修改密码 -->
-      <section class="card">
-        <h3 class="card-title">
-          修改密码
-        </h3>
-        <p class="card-sub">
-          修改当前登录账号的密码
-        </p>
-        <el-form label-position="top" @submit.prevent="submitPassword">
-          <label class="field-label">当前密码</label>
-          <el-input
-            v-model="pw.oldPassword"
-            type="password"
-            show-password
-            placeholder="输入当前密码"
-            size="large"
-            :prefix-icon="Lock"
-          />
-          <label class="field-label">新密码</label>
-          <el-input
-            v-model="pw.newPassword"
-            type="password"
-            show-password
-            placeholder="至少 6 位"
-            size="large"
-            :prefix-icon="Key"
-          />
-          <label class="field-label">确认新密码</label>
-          <el-input
-            v-model="pw.confirm"
-            type="password"
-            show-password
-            placeholder="再次输入新密码"
-            size="large"
-            :prefix-icon="Key"
-            @keyup.enter="submitPassword"
-          />
-          <el-button
-            class="grad-btn submit-btn"
-            type="primary"
-            size="large"
-            :loading="pwLoading"
-            @click="submitPassword"
-          >
-            保存新密码
-          </el-button>
-        </el-form>
-      </section>
+    <div class="settings-grid" :class="{ 'no-users': !isAdmin }">
+      <!-- 左列：导出设置 + 修改密码（上下排列） -->
+      <div class="settings-col">
+        <!-- 导出设置 -->
+        <section class="card">
+          <h3 class="card-title">
+            导出设置
+          </h3>
+          <p class="card-sub">
+            配置 XiaoMusic 导出使用的服务器地址与音质，保存后导出时无需再填写
+          </p>
+          <el-form label-position="top" @submit.prevent="saveExportConfig">
+            <label class="field-label">服务器地址</label>
+            <el-input v-model="exportForm.serverUrl" placeholder="http://127.0.0.1:3000" size="large" :prefix-icon="Link" />
+            <p class="form-tip">
+              本项目启动后的服务地址（本机 / 局域网 / 公网 / Docker），播放时需保持服务器运行
+            </p>
+            <label class="field-label">导出音质</label>
+            <quality-select v-model="exportForm.quality" />
+            <el-button
+              class="grad-btn submit-btn"
+              type="primary"
+              size="large"
+              :loading="cfgSaving"
+              @click="saveExportConfig"
+            >
+              保存导出设置
+            </el-button>
+          </el-form>
+        </section>
 
-      <!-- 用户管理（管理员） -->
+        <!-- 修改密码 -->
+        <section class="card">
+          <h3 class="card-title">
+            修改密码
+          </h3>
+          <p class="card-sub">
+            修改当前登录账号的密码
+          </p>
+          <el-form label-position="top" @submit.prevent="submitPassword">
+            <label class="field-label">当前密码</label>
+            <el-input
+              v-model="pw.oldPassword"
+              type="password"
+              show-password
+              placeholder="输入当前密码"
+              size="large"
+              :prefix-icon="Lock"
+            />
+            <label class="field-label">新密码</label>
+            <el-input
+              v-model="pw.newPassword"
+              type="password"
+              show-password
+              placeholder="至少 6 位"
+              size="large"
+              :prefix-icon="Key"
+            />
+            <label class="field-label">确认新密码</label>
+            <el-input
+              v-model="pw.confirm"
+              type="password"
+              show-password
+              placeholder="再次输入新密码"
+              size="large"
+              :prefix-icon="Key"
+              @keyup.enter="submitPassword"
+            />
+            <el-button
+              class="grad-btn submit-btn"
+              type="primary"
+              size="large"
+              :loading="pwLoading"
+              @click="submitPassword"
+            >
+              保存新密码
+            </el-button>
+          </el-form>
+        </section>
+      </div>
+
+      <!-- 右列：用户管理（独立一列） -->
       <section v-if="isAdmin" class="card wide">
         <div class="card-head">
           <div>
@@ -72,7 +103,7 @@
         </div>
 
         <el-table v-loading="usersLoading" :data="users" class="user-table">
-          <el-table-column label="用户" min-width="180">
+          <el-table-column label="用户" min-width="140">
             <template #default="{ row }">
               <div class="user-cell">
                 <el-avatar :size="30" class="user-avatar">
@@ -82,33 +113,40 @@
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="角色" width="120">
+          <el-table-column label="角色" width="90">
             <template #default="{ row }">
               <el-tag :type="row.is_admin ? 'warning' : 'info'" size="small" round>
                 {{ row.is_admin ? '管理员' : '用户' }}
               </el-tag>
             </template>
           </el-table-column>
-          <el-table-column label="创建时间" min-width="140">
+          <el-table-column label="创建时间" width="160">
             <template #default="{ row }">
-              {{ fmtTime(row.created_at) }}
+              <span class="nowrap">
+                {{ fmtTime(row.created_at) }}
+              </span>
             </template>
           </el-table-column>
           <el-table-column label="操作" width="180" align="center">
             <template #default="{ row }">
-              <el-button size="small" text :icon="Refresh" @click="resetPassword(row)">
-                重置密码
-              </el-button>
-              <el-button
-                size="small"
-                text
-                type="danger"
-                :icon="Delete"
-                :disabled="row.id === appUser?.id"
-                @click="removeUser(row)"
-              >
-                删除
-              </el-button>
+              <div v-if="row.id === appUser?.id" class="row-self">
+                当前账号
+              </div>
+              <div v-else class="row-actions">
+                <el-button size="small" text :icon="Refresh" @click="resetPassword(row)">
+                  重置密码
+                </el-button>
+                <el-button
+                  size="small"
+                  text
+                  type="danger"
+                  :icon="Delete"
+                  :disabled="row.id === appUser?.id"
+                  @click="removeUser(row)"
+                >
+                  删除
+                </el-button>
+              </div>
             </template>
           </el-table-column>
         </el-table>
@@ -144,15 +182,42 @@
 
 <script setup lang="ts">
 import type { SessionUser } from '@/api';
-import { Delete, Key, Lock, Plus, Refresh, User } from '@element-plus/icons-vue';
+import { Delete, Key, Link, Lock, Plus, Refresh, User } from '@element-plus/icons-vue';
 import dayjs from 'dayjs';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { reactive, ref } from 'vue';
-import { userApi } from '@/api';
+import { configApi, userApi } from '@/api';
+import QualitySelect from '@/components/QualitySelect.vue';
 import { useAuth } from '@/stores/auth';
 
 const { user: appUser } = useAuth();
 const isAdmin = computed(() => !!appUser.value?.is_admin);
+
+// ---- 导出设置 ----
+const exportForm = ref({ serverUrl: '', quality: 'high' });
+const cfgSaving = ref(false);
+
+async function loadExportConfig() {
+  try {
+    const cfg = await configApi.get();
+    exportForm.value.serverUrl = cfg.serverUrl;
+    if (cfg.settings?.quality) exportForm.value.quality = cfg.settings.quality;
+  } catch {
+    /* ignore */
+  }
+}
+
+async function saveExportConfig() {
+  cfgSaving.value = true;
+  try {
+    await configApi.save({ serverUrl: exportForm.value.serverUrl.trim(), quality: exportForm.value.quality });
+    ElMessage.success('导出设置已保存');
+  } catch {
+    ElMessage.error('保存失败');
+  } finally {
+    cfgSaving.value = false;
+  }
+}
 
 const pw = reactive({ oldPassword: '', newPassword: '', confirm: '' });
 const pwLoading = ref(false);
@@ -239,6 +304,8 @@ async function resetPassword(row: SessionUser) {
     inputType: 'password',
     inputPattern: /^.{6,}$/,
     inputErrorMessage: '密码至少 6 位',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
   });
   try {
     await userApi.resetPassword(row.id, res.value);
@@ -249,7 +316,11 @@ async function resetPassword(row: SessionUser) {
 }
 
 async function removeUser(row: SessionUser) {
-  await ElMessageBox.confirm(`确定删除用户「${row.username}」？该操作不可撤销`, '提示', { type: 'warning' });
+  await ElMessageBox.confirm(`确定删除用户「${row.username}」？该操作不可撤销`, '提示', {
+    type: 'warning',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+  });
   try {
     await userApi.remove(row.id);
     ElMessage.success('已删除');
@@ -260,6 +331,7 @@ async function removeUser(row: SessionUser) {
 }
 
 onMounted(() => {
+  loadExportConfig();
   if (isAdmin.value) loadUsers();
 });
 </script>
@@ -288,9 +360,21 @@ onMounted(() => {
 
 .settings-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  grid-template-columns: minmax(360px, 0.9fr) minmax(560px, 1.4fr);
   gap: 20px;
   align-items: start;
+}
+
+/* 非管理员：没有用户管理卡片，收成单列避免右侧留白 */
+.settings-grid.no-users {
+  grid-template-columns: minmax(340px, 560px);
+}
+
+.settings-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
 }
 
 .card {
@@ -302,7 +386,7 @@ onMounted(() => {
 }
 
 .card.wide {
-  grid-column: span 1;
+  min-width: 0;
 }
 
 .card-title {
@@ -316,6 +400,13 @@ onMounted(() => {
   margin: 0 0 18px;
   font-size: 12px;
   color: var(--text-3);
+}
+
+.form-tip {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.6;
 }
 
 .card-head {
@@ -343,6 +434,23 @@ onMounted(() => {
   margin-top: 6px;
 }
 
+.user-table .nowrap {
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.row-self {
+  font-size: 12px;
+  color: var(--text-3);
+}
+
 .user-cell {
   display: flex;
   align-items: center;
@@ -361,7 +469,7 @@ onMounted(() => {
   color: var(--text-1);
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1120px) {
   .settings-grid {
     grid-template-columns: 1fr;
   }
