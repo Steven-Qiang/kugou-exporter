@@ -71,7 +71,15 @@
           </el-dropdown>
         </div>
 
-        <template v-if="selectedPlaylist">
+        <!-- 加载中：不显示空态引导，避免误导 -->
+        <div v-if="loading" class="main-loading">
+          <el-icon class="is-loading" :size="36">
+            <loading-icon />
+          </el-icon>
+          <span class="muted">正在加载歌单...</span>
+        </div>
+
+        <template v-else-if="selectedPlaylist">
           <div class="banner" :style="bannerStyle">
             <div class="banner-overlay" />
             <div class="banner-cover">
@@ -168,18 +176,45 @@
             </div>
           </div>
         </template>
-        <el-empty
-          v-else
-          class="main-empty"
-          :description="hasAccount ? '左侧选择歌单开始浏览' : '尚未绑定酷狗账号'"
-          :image-size="120"
-        >
-          <template #description>
+        <div v-else class="main-empty">
+          <div class="empty-guide">
+            <div class="empty-icon grad-icon">
+              <svg
+                viewBox="0 0 24 24"
+                width="30"
+                height="30"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M9 18V5l12-2v13" />
+                <circle cx="6" cy="18" r="3" />
+                <circle cx="18" cy="16" r="3" />
+              </svg>
+            </div>
+            <h2>
+              {{ hasAccount ? '开始浏览你的歌单' : '还没有绑定酷狗账号' }}
+            </h2>
             <p class="muted">
-              {{ hasAccount ? '选择左侧歌单，查看歌曲并一键导出' : '请先到账号管理页添加并激活你的酷狗账号' }}
+              {{
+                hasAccount
+                  ? '从左侧选择歌单，查看歌曲并一键导出'
+                  : '连接你的酷狗账号后，歌单会自动同步到这里，可一键导出到小爱音箱等播放器'
+              }}
             </p>
-          </template>
-        </el-empty>
+            <el-button
+              v-if="!hasAccount"
+              class="grad-btn"
+              type="primary"
+              size="large"
+              @click="router.push('/accounts')"
+            >
+              去账号管理连接
+            </el-button>
+          </div>
+        </div>
       </main>
     </div>
 
@@ -191,7 +226,7 @@
 <script setup lang="ts">
 import type { KugouAccount } from '@/api';
 import type { Playlist, Song } from '@/types';
-import { ArrowDown, Download, Refresh, Search } from '@element-plus/icons-vue';
+import { ArrowDown, Download, Loading as LoadingIcon, Refresh, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { kugouApi } from '@/api';
@@ -767,6 +802,57 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+
+/* 加载中：居中 spinner + 文案 */
+.main-loading {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+/* 空态引导卡 */
+.empty-guide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: 420px;
+  padding: 40px 28px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  box-shadow: var(--shadow-1);
+  text-align: center;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  margin-bottom: 4px;
+}
+
+.empty-guide h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+.empty-guide p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.empty-guide .el-button {
+  margin-top: 12px;
+  height: 42px;
 }
 
 @media (max-width: 900px) {

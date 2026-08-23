@@ -19,10 +19,10 @@
         </span>
       </div>
 
-      <!-- 无账号（仅在确已加载且为空时）：内嵌连接表单，避免先闪“连接卡片” -->
+      <!-- 无账号（仅在确已加载且为空时）：简洁的连接登录卡 -->
       <div v-if="loaded && accounts.length === 0" class="connect-inline">
         <div class="connect-head">
-          <el-avatar :size="42" class="connect-avatar grad-icon">
+          <div class="connect-avatar grad-icon">
             <svg
               viewBox="0 0 24 24"
               width="22"
@@ -37,10 +37,10 @@
               <circle cx="6" cy="18" r="3" />
               <circle cx="18" cy="16" r="3" />
             </svg>
-          </el-avatar>
+          </div>
           <div>
-            <h3>连接酷狗账号</h3>
-            <p>使用手机验证码或扫码登录，连接后即可导出歌单</p>
+            <h3>连接你的酷狗账号</h3>
+            <p>手机验证码或扫码登录，连接后即可导出歌单</p>
           </div>
         </div>
 
@@ -538,13 +538,13 @@ load();
   flex-shrink: 0;
 }
 
-/* 内嵌连接表单 */
+/* 内嵌连接表单（无账号空态：登录卡） */
 .connect-inline {
   max-width: 440px;
   width: 100%;
   margin: 8px auto 0;
-  padding: 30px 32px;
-  border-radius: 24px;
+  padding: 28px 28px 20px;
+  border-radius: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: var(--shadow-1);
@@ -565,25 +565,38 @@ load();
 .connect-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 24px;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .connect-avatar {
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  flex-shrink: 0;
 }
 
 .connect-head h3 {
   margin: 0;
-  font-size: 19px;
-  font-weight: 800;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--text-1);
 }
 
 .connect-head p {
-  margin: 4px 0 0;
-  font-size: 13px;
+  margin: 3px 0 0;
+  font-size: 12px;
   color: var(--text-3);
+}
+
+.connect-note {
+  margin: 16px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  line-height: 1.6;
 }
 
 .connect-note {
@@ -612,15 +625,10 @@ load();
   padding: 2px 0;
 }
 
-/* 固定内容区高度：手机 / 扫码两个 pane 高度一致，切换时弹窗高度不变 */
+/* 内容区：自然高度（手机登录紧凑布局；扫码面板自身保证高度） */
 .tab-content {
-  min-height: 300px;
   display: flex;
   flex-direction: column;
-}
-
-.tab-content .tab-pane {
-  flex: 1;
 }
 
 .tab-nav {
@@ -679,10 +687,24 @@ load();
 .code-input {
   display: flex;
   gap: 10px;
+  align-items: stretch;
 }
 
 .code-input .el-input {
   flex: 1;
+}
+
+/* 发送验证码按钮与输入框同高 */
+.code-input .el-button {
+  height: 40px;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+/* 手机登录 pane：内容自然紧凑，无撑高空白 */
+.tab-pane {
+  display: flex;
+  flex-direction: column;
 }
 
 .submit-btn {

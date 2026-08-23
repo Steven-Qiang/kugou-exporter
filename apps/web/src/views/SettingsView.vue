@@ -23,16 +23,27 @@
               本项目启动后的服务地址（本机 / 局域网 / 公网 / Docker），播放时需保持服务器运行
             </p>
             <label class="field-label">导出音质</label>
-            <quality-select v-model="exportForm.quality" />
-            <el-button
-              class="grad-btn submit-btn"
-              type="primary"
-              size="large"
-              :loading="cfgSaving"
-              @click="saveExportConfig"
-            >
-              保存导出设置
-            </el-button>
+            <quality-select v-model="exportForm.quality" size="large" />
+            <div class="card-info">
+              <strong>代理链接说明</strong>
+              <ul>
+                <li>导出的 XiaoMusic 播放链接为服务代理地址，播放器请求时服务器实时获取最新音频</li>
+                <li>解决酷狗直链 2–4 小时过期问题，代理链接长期有效</li>
+                <li>需保持本项目服务器运行，支持内网 / 外网 / Docker</li>
+                <li>音质越高可能要求酷狗账号具备对应权限（如 VIP 高品质音质）</li>
+              </ul>
+            </div>
+            <div class="form-actions">
+              <el-button
+                class="grad-btn submit-btn"
+                type="primary"
+                size="large"
+                :loading="cfgSaving"
+                @click="saveExportConfig"
+              >
+                保存导出设置
+              </el-button>
+            </div>
           </el-form>
         </section>
 
@@ -73,15 +84,26 @@
               :prefix-icon="Key"
               @keyup.enter="submitPassword"
             />
-            <el-button
-              class="grad-btn submit-btn"
-              type="primary"
-              size="large"
-              :loading="pwLoading"
-              @click="submitPassword"
-            >
-              保存新密码
-            </el-button>
+            <div class="card-info">
+              <strong>安全提示</strong>
+              <ul>
+                <li>密码至少 6 位，建议使用字母 + 数字组合，避免与其他平台重复</li>
+                <li>修改成功前需验证当前密码，修改后请使用新密码登录</li>
+                <li>忘记当前密码时，可联系管理员在「用户管理」中重置</li>
+                <li>为子用户重置密码同样会在「用户管理」中进行</li>
+              </ul>
+            </div>
+            <div class="form-actions">
+              <el-button
+                class="grad-btn submit-btn"
+                type="primary"
+                size="large"
+                :loading="pwLoading"
+                @click="submitPassword"
+              >
+                保存新密码
+              </el-button>
+            </div>
           </el-form>
         </section>
       </div>
@@ -365,9 +387,15 @@ onMounted(() => {
   align-items: start;
 }
 
-/* 非管理员：没有用户管理卡片，收成单列避免右侧留白 */
+/* 非管理员：没有用户管理卡片，两张设置卡并排铺满 */
 .settings-grid.no-users {
-  grid-template-columns: minmax(340px, 560px);
+  grid-template-columns: 1fr;
+}
+
+.settings-grid.no-users .settings-col {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  gap: 20px;
 }
 
 .settings-col {
@@ -375,6 +403,30 @@ onMounted(() => {
   flex-direction: column;
   gap: 20px;
   min-width: 0;
+  align-items: stretch;
+}
+
+/* 卡片等高，表单撑满，主按钮贴底 → 左右两卡按钮底边对齐 */
+.settings-col .card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-col .card .el-form {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-col .submit-btn {
+  margin-top: 0;
+}
+
+/* 按钮贴底且与上方输入框保持 20px 间距 */
+.settings-col .form-actions {
+  margin-top: auto;
+  padding-top: 20px;
 }
 
 .card {
@@ -407,6 +459,31 @@ onMounted(() => {
   font-size: 12px;
   color: var(--text-3);
   line-height: 1.6;
+}
+
+/* 说明卡：弹性拉满剩余空间，消除两卡等高带来的空白带 */
+.card-info {
+  margin-top: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+.card-info strong {
+  font-size: 13px;
+  color: var(--text-1);
+}
+
+.card-info ul {
+  margin: 8px 0 0;
+  padding-left: 16px;
+  font-size: 12px;
+  color: var(--text-2);
+  line-height: 1.8;
 }
 
 .card-head {

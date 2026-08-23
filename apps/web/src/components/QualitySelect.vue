@@ -1,5 +1,5 @@
 <template>
-  <el-select v-model="quality" placeholder="请选择音质">
+  <el-select v-model="quality" :size="size" placeholder="请选择音质">
     <el-option label="钢琴" value="piano" />
     <el-option label="清唱" value="acappella" />
     <el-option label="低音炮" value="subwoofer" />
@@ -17,5 +17,6 @@
 </template>
 
 <script setup lang="ts">
+defineProps<{ size?: 'large' | 'default' | 'small' }>();
 const quality = defineModel<string>({ required: true });
 </script>
