@@ -55,7 +55,11 @@ export function attachHistoryRoutes(app: Express): void {
   });
 
   app.delete('/history/:id', requireAuth, (req, res) => {
-    deleteHistory(Number(req.params.id), req.userId ?? 0);
+    const ok = deleteHistory(Number(req.params.id), req.userId ?? 0);
+    if (!ok) {
+      res.status(404).json({ error: '记录不存在或无权操作' });
+      return;
+    }
     res.json({ success: true });
   });
 }

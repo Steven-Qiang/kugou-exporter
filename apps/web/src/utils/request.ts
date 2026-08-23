@@ -67,12 +67,15 @@ request.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error.config?.url, JSON.stringify(error.response?.data));
-    if (error.response?.status === 301) {
-      router.push('/login');
-      ElMessage.error('请先登录');
+    const isAuth = error.config?.url?.startsWith('/auth/');
+    if (error.response?.status === 401) {
+      // /auth/* 的 401 是预期内的鉴权状态（守卫检查 /auth/me、登录失败等），由调用方处理；
+      // 其余受保护业务接口遇到 401 说明会话过期，直接回登录页。
+      if (!isAuth) {
+        router.push('/login');
+        ElMessage.error('请先登录');
+      }
     } else {
-      // 401 是预期内的鉴权状态（守卫检查 /auth/me、登录失败等），由调用方处理，不弹通用错误
-      const isAuth = error.config?.url?.startsWith('/auth/');
       // /kugou 数据接口失败由组件处理（显示友好空态/提示），不弹通用错误
       const isKugou = error.config?.url?.startsWith('/kugou/');
       if (!isAuth && !isKugou && !ignoreErrorDialogUrl.includes(error.config?.url || ''))

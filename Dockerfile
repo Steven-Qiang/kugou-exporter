@@ -3,8 +3,8 @@ FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm
+# Install pnpm（锁定到 packageManager 版本，避免新版 pnpm 通过 @pnpm/exe 委托到 10.x 触发校验错误）
+RUN npm install -g pnpm@10.29.3
 
 # Copy all source code
 COPY . .

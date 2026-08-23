@@ -231,6 +231,19 @@ export function disableDemo() {
 /** Resolve a mocked payload for the given request url + params. */
 export function mockResolve(url: string, params?: Record<string, any>): any {
   const clean = url.split('?')[0];
+  // 账号详情：演示模式下返回带头像/会员的资料，便于预览
+  if ((/^\/kugou\/account\/\d+$/).test(clean)) {
+    return {
+      success: true,
+      profile: {
+        userid: 1,
+        nickname: '演示账号',
+        pic: coverPlaceholder(7, 'U'),
+        vipType: 1,
+        gender: 2,
+      },
+    };
+  }
   const handlers = entries();
   const handler = handlers[clean];
   if (!handler) return null;

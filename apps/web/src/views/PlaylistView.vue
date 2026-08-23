@@ -39,10 +39,10 @@
           <span class="toolbar-label">当前账号</span>
           <el-dropdown v-if="activeAccount" trigger="click" @command="handleAccountCommand">
             <div class="toolbar-chip">
-              <el-avatar :size="26" class="chip-avatar">
-                {{ activeAccount.nickname?.charAt(0) || '♪' }}
+              <el-avatar :size="26" class="chip-avatar" :src="avatarSrc(activeAccount)">
+                {{ firstNick(profile(activeAccount).nickname || activeAccount.nickname) }}
               </el-avatar>
-              <span class="chip-name">{{ activeAccount.nickname || '当前账号' }}</span>
+              <span class="chip-name">{{ profile(activeAccount).nickname || activeAccount.nickname || '当前账号' }}</span>
               <el-icon class="chip-arrow">
                 <arrow-down />
               </el-icon>
@@ -59,8 +59,21 @@
                   :disabled="String(acct.id) === String(activeAccount?.id)"
                 >
                   <span class="menu-item-menu">
-                    <span class="menu-avatar">{{ acct.nickname?.charAt(0) || '♪' }}</span>
-                    <span class="menu-name">{{ acct.nickname || `账号 ${acct.id}` }}</span>
+                    <img
+                      v-if="profile(acct).pic"
+                      :src="avatarSrc(acct)"
+                      class="menu-avatar menu-avatar-img"
+                      alt=""
+                    >
+                    <span v-else class="menu-avatar">{{ firstNick(profile(acct).nickname || acct.nickname) }}</span>
+                    <span class="menu-name">{{ profile(acct).nickname || acct.nickname || `账号 ${acct.id}` }}</span>
+                    <span
+                      v-if="profile(acct).vipType > 0"
+                      class="vip-dot"
+                      :title="vipLabel(profile(acct).vipType)"
+                    >
+                      VIP
+                    </span>
                     <el-tag v-if="String(acct.id) === String(activeAccount?.id)" size="small" type="success" round>
                       当前
                     </el-tag>
@@ -225,7 +238,7 @@
 
 <script setup lang="ts">
 import type { KugouAccount } from '@/api';
-import type { Playlist, Song } from '@/types';
+import type { AccountProfile, Playlist, Song } from '@/types';
 import { ArrowDown, Download, Loading as LoadingIcon, Refresh, Search } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
@@ -245,6 +258,7 @@ function updateIsMobile() {
 
 const activeAccount = ref<KugouAccount | null>(null);
 const accountList = ref<KugouAccount[]>([]);
+const accountDetails = ref<Record<number, AccountProfile>>({});
 const hasAccount = ref(false);
 const loading = ref(false);
 const loadingSongs = ref(false);
@@ -296,6 +310,41 @@ function artistNames(s: Song): string {
   return s.singerinfo?.map((x) => x.name).join(' / ') || '未知';
 }
 
+function firstNick(name?: string): string {
+  return name?.charAt(0) || '♪';
+}
+
+const EMPTY_PROFILE: AccountProfile = { vipType: 0 };
+
+function profile(acct?: KugouAccount | null): AccountProfile {
+  return (acct && accountDetails.value[acct.id]) || EMPTY_PROFILE;
+}
+
+function avatarSrc(acct?: KugouAccount | null): string {
+  const pic = profile(acct).pic;
+  return pic ? replaceImageSize(pic, 64) : '';
+}
+
+function vipLabel(type: number): string {
+  if (!(type > 0)) return '';
+  return type === 1 ? '豪华 VIP' : `酷狗会员 Lv${type}`;
+}
+
+async function loadAccountDetails() {
+  const map: Record<number, AccountProfile> = {};
+  await Promise.allSettled(
+    accountList.value.map(async (acct) => {
+      try {
+        const res = await kugouApi.accountDetail(acct.id);
+        if (res.success && res.profile) map[acct.id] = res.profile;
+      } catch {
+        /* ignore */
+      }
+    })
+  );
+  accountDetails.value = map;
+}
+
 async function loadAccounts() {
   try {
     const list = await kugouApi.list();
@@ -307,6 +356,7 @@ async function loadAccounts() {
     activeAccount.value = null;
     hasAccount.value = false;
   }
+  await loadAccountDetails();
 }
 
 async function fetchPlaylists() {
@@ -505,6 +555,28 @@ onUnmounted(() => {
   font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+/* 头像图片：复用 .menu-avatar 尺寸/圆角 */
+.menu-avatar-img {
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface-muted);
+  object-fit: cover;
+}
+
+/* 下拉里的 VIP 小标记 */
+.vip-dot {
+  flex-shrink: 0;
+  padding: 0 5px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.6;
+  color: #7c4dff;
+  background: rgba(124, 77, 255, 0.14);
+  border: 1px solid rgba(124, 77, 255, 0.35);
 }
 
 .menu-name {

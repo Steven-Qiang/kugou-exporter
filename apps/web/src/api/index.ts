@@ -1,3 +1,4 @@
+import type { AccountProfile } from '@/types';
 import request from '@/utils/request';
 
 export interface SessionUser {
@@ -39,6 +40,8 @@ export const authApi = {
 
 export const kugouApi = {
   list: () => request.get<{ accounts: KugouAccount[] }>('/kugou').then((r) => r.data.accounts),
+  accountDetail: (id: number) =>
+    request.get<{ success: boolean; profile: AccountProfile }>(`/kugou/account/${id}`).then((r) => r.data),
   add: (nickname: string) =>
     request.post<{ success: boolean; account: KugouAccount }>('/kugou', { nickname }).then((r) => r.data.account),
   activate: (id: number) => request.post(`/kugou/${id}/activate`).then((r) => r.data),

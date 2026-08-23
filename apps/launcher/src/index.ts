@@ -10,6 +10,7 @@ import { attachExportRoutes } from './routes/export';
 import { attachHistoryRoutes } from './routes/history';
 import { attachKugouRoutes } from './routes/kugou';
 import { attachProxyRoutes } from './routes/proxy';
+import { cleanupExpiredSessions } from './store/sessions';
 
 function showBanner(): void {
   console.log(
@@ -54,6 +55,10 @@ async function start(): Promise<void> {
       console.log(chalk.green(`✅ 服务已启动: http://127.0.0.1:${port}`));
       console.log(chalk.gray('\n按 Ctrl+C 停止服务\n'));
     });
+
+    // 定期清理过期会话（启动时先清一次，之后每小时一次）
+    cleanupExpiredSessions();
+    setInterval(cleanupExpiredSessions, 60 * 60 * 1000);
   } catch (error) {
     console.error('❌ 服务启动失败:', error);
     process.exit(1);

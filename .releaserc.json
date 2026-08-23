@@ -11,16 +11,8 @@
       }
     ],
     [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "pnpm build:nexe"
-      }
-    ],
-    [
       "@semantic-release/github",
-      {
-        "assets": ["./dist/*"]
-      }
+      {}
     ],
     [
       "@semantic-release/git",

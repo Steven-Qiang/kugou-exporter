@@ -1,11 +1,14 @@
 import type { Express, Response } from 'express';
 import kugoumusicapi from 'kugoumusicapi';
+import { normalizeKugouUser } from '../lib/kugou-profile';
 import { requireAuth, SESSION_COOKIE } from '../middleware/session';
 import {
   addKugouAccount,
   deleteKugouAccount,
   getActiveKugouAccount,
   getActiveKugouCookies,
+  getKugouAccountOwned,
+  getKugouCookies,
   listKugouAccounts,
   publicKugouAccount,
   setActiveKugouAccount,
@@ -44,21 +47,56 @@ export function attachKugouRoutes(app: Express): void {
   });
 
   app.post('/kugou/:id/activate', requireAuth, (req, res) => {
-    setActiveKugouAccount(Number(req.params.id), req.userId ?? 0);
+    const ok = setActiveKugouAccount(Number(req.params.id), req.userId ?? 0);
+    if (!ok) {
+      res.status(404).json({ error: '账号不存在或无权操作' });
+      return;
+    }
     res.json({ success: true });
   });
 
   app.post('/kugou/:id/rename', requireAuth, (req, res) => {
-    updateKugouAccountNickname(Number(req.params.id), req.userId ?? 0, String(req.body?.nickname || ''));
+    const ok = updateKugouAccountNickname(Number(req.params.id), req.userId ?? 0, String(req.body?.nickname || ''));
+    if (!ok) {
+      res.status(404).json({ error: '账号不存在或无权操作' });
+      return;
+    }
     res.json({ success: true });
   });
 
   app.delete('/kugou/:id', requireAuth, (req, res) => {
-    deleteKugouAccount(Number(req.params.id), req.userId ?? 0);
+    const ok = deleteKugouAccount(Number(req.params.id), req.userId ?? 0);
+    if (!ok) {
+      res.status(404).json({ error: '账号不存在或无权操作' });
+      return;
+    }
     res.json({ success: true });
   });
 
   // ---- 数据接口（用激活酷狗账号的 cookie，服务端直连，前端无需持有 cookie）----
+
+  // 单个账号的详情（头像 / 会员等）。也用该账号自身 cookie 直连酷狗，归属校验。
+  app.get('/kugou/account/:id', requireAuth, async (req, res: Response) => {
+    const id = Number(req.params.id);
+    const userId = req.userId ?? 0;
+    const acct = getKugouAccountOwned(id, userId);
+    if (!acct) {
+      res.status(404).json({ error: '账号不存在或无权操作' });
+      return;
+    }
+    const cookie = getKugouCookies(id, userId);
+    try {
+      const resp = await kugoumusicapi.user_detail({ cookie });
+      const profile = normalizeKugouUser(resp?.body);
+      // 顺带用最新昵称回写，保持列表昵称新鲜（仅在酷狗返回了昵称时）
+      if (profile.nickname) updateKugouAccountNickname(id, userId, profile.nickname);
+      res.json({ success: true, profile });
+    } catch (e: any) {
+      console.error('[kugou account detail] error', e?.message || e);
+      res.status(502).json({ success: false, error: '获取账号详情失败', profile: { vipType: 0 } });
+    }
+  });
+
   app.get('/kugou/me', requireAuth, async (req, res: Response) => {
     const r = await withActiveKugou(req.userId ?? 0, (cookie) => kugoumusicapi.user_detail({ cookie }));
     res.status(r.status).json(r.body);

@@ -30,6 +30,8 @@ export function addHistory(
   ).run(userId, kugouAccountId, playlistName, format, count, content, quality, Date.now());
 }
 
-export function deleteHistory(id: number, userId: number): void {
-  db.prepare('DELETE FROM export_history WHERE id=? AND user_id=?').run(id, userId);
+/** 删除历史记录。返回是否命中（0 行即无权/不存在）。 */
+export function deleteHistory(id: number, userId: number): boolean {
+  const info = db.prepare('DELETE FROM export_history WHERE id=? AND user_id=?').run(id, userId);
+  return Number(info.changes) > 0;
 }

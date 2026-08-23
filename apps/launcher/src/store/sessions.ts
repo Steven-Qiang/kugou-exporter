@@ -24,3 +24,9 @@ export function getSession(token: string): { userId: number } | null {
 export function deleteSession(token: string): void {
   db.prepare('DELETE FROM sessions WHERE token=?').run(token);
 }
+
+/** 批量清理已过期的会话，避免过期行无限积累。返回清理数量。 */
+export function cleanupExpiredSessions(): number {
+  const info = db.prepare('DELETE FROM sessions WHERE expires_at < ?').run(Date.now());
+  return Number(info.changes);
+}

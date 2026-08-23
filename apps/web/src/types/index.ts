@@ -22,6 +22,15 @@ export interface AccountListData {
   info_list: AccountInfo[];
 }
 
+/** 酷狗账号详情（头像 / 会员等），由后端 /kugou/account/:id 归一化返回。 */
+export interface AccountProfile {
+  userid?: number;
+  nickname?: string;
+  pic?: string;
+  vipType: number;
+  gender?: number;
+}
+
 export interface PlaylistData {
   info: Playlist[];
 }

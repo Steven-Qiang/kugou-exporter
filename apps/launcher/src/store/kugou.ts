@@ -80,13 +80,15 @@ export function addKugouAccount(
   return db.prepare('SELECT * FROM kugou_accounts WHERE id=?').get(info.lastInsertRowid) as unknown as KugouAccount;
 }
 
-export function setKugouAccountCookies(id: number, userId: number, cookies: Record<string, string>): void {
-  db.prepare('UPDATE kugou_accounts SET cookies_json=?, updated_at=? WHERE id=? AND user_id=?').run(
+/** 更新账号 cookie（按 id + 用户归属）。返回是否命中（0 行即无权/不存在）。 */
+export function setKugouAccountCookies(id: number, userId: number, cookies: Record<string, string>): boolean {
+  const info = db.prepare('UPDATE kugou_accounts SET cookies_json=?, updated_at=? WHERE id=? AND user_id=?').run(
     JSON.stringify(cookies || {}),
     Date.now(),
     id,
     userId
   );
+  return Number(info.changes) > 0;
 }
 
 /** 按账号 id 直接写回 cookie，不校验用户归属 —— 供公开代理刷新登录态使用 */
@@ -107,22 +109,28 @@ export function setKugouAccountCookiesByKgUserid(kgUserid: string, cookies: Reco
   );
 }
 
-export function setActiveKugouAccount(id: number, userId: number): void {
+/** 将账号设为激活。返回是否命中（0 行即无权/不存在），避免跨用户误报成功。 */
+export function setActiveKugouAccount(id: number, userId: number): boolean {
   db.prepare('UPDATE kugou_accounts SET active=0 WHERE user_id=?').run(userId);
-  db.prepare('UPDATE kugou_accounts SET active=1, updated_at=? WHERE id=? AND user_id=?').run(Date.now(), id, userId);
+  const info = db.prepare('UPDATE kugou_accounts SET active=1, updated_at=? WHERE id=? AND user_id=?').run(Date.now(), id, userId);
+  return Number(info.changes) > 0;
 }
 
-export function updateKugouAccountNickname(id: number, userId: number, nickname: string): void {
-  db.prepare('UPDATE kugou_accounts SET nickname=?, updated_at=? WHERE id=? AND user_id=?').run(
+/** 更新昵称。返回是否命中（0 行即无权/不存在）。 */
+export function updateKugouAccountNickname(id: number, userId: number, nickname: string): boolean {
+  const info = db.prepare('UPDATE kugou_accounts SET nickname=?, updated_at=? WHERE id=? AND user_id=?').run(
     nickname,
     Date.now(),
     id,
     userId
   );
+  return Number(info.changes) > 0;
 }
 
-export function deleteKugouAccount(id: number, userId: number): void {
-  db.prepare('DELETE FROM kugou_accounts WHERE id=? AND user_id=?').run(id, userId);
+/** 删除账号。返回是否命中（0 行即无权/不存在）。 */
+export function deleteKugouAccount(id: number, userId: number): boolean {
+  const info = db.prepare('DELETE FROM kugou_accounts WHERE id=? AND user_id=?').run(id, userId);
+  return Number(info.changes) > 0;
 }
 
 export function getKugouCookies(id: number, userId: number): Record<string, string> {

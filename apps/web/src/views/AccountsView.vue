@@ -116,14 +116,24 @@
       <!-- 有账号：账号列表（行式卡片） -->
       <div v-else v-loading="loading" class="acct-list">
         <div v-for="acct in accounts" :key="acct.id" class="acct-row" :class="{ active: acct.active }">
-          <span class="row-avatar">{{ firstNick(acct.nickname) }}</span>
+          <img
+            v-if="profile(acct).pic"
+            :src="replaceImageSize(profile(acct).pic, 100)"
+            class="row-avatar row-avatar-img"
+            alt=""
+          >
+          <span v-else class="row-avatar">{{ firstNick(displayName(acct)) }}</span>
           <div class="row-body">
-            <div class="row-name" :title="acct.nickname || '未命名账号'">
-              {{ acct.nickname || '未命名账号' }}
+            <div class="row-name" :title="displayName(acct)">
+              {{ displayName(acct) }}
+              <span v-if="profile(acct).vipType > 0" class="vip-badge" :title="vipLabel(profile(acct).vipType)">
+                VIP
+              </span>
             </div>
             <div class="row-sub">
               <span v-if="acct.active" class="row-dot" />
               <span>{{ acct.active ? '当前账号' : '已连接' }}</span>
+              <span v-if="profile(acct).gender != null" class="sub-item">{{ genderLabel(profile(acct).gender) }}</span>
               <span v-if="acct.kgUserid" class="row-uid">UID {{ acct.kgUserid }}</span>
             </div>
           </div>
@@ -244,7 +254,7 @@
 
 <script setup lang="ts">
 import type { KugouAccount } from '@/api';
-import type { QRCheckData, QRCreateData, QRKeyData } from '@/types';
+import type { AccountProfile, QRCheckData, QRCreateData, QRKeyData } from '@/types';
 import { Loading as LoadingIcon } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { kugouApi } from '@/api';
@@ -258,6 +268,7 @@ const loading = ref(false);
 const qrPending = ref(false);
 const submitLoading = ref(false);
 const accounts = ref<KugouAccount[]>([]);
+const details = ref<Record<number, AccountProfile>>({});
 const showConnect = ref(false);
 
 const activeTab = ref('phone');
@@ -274,6 +285,39 @@ function firstNick(nickname: string): string {
   return nickname?.charAt(0) || '♪';
 }
 
+function profile(acct: KugouAccount): AccountProfile {
+  return details.value[acct.id] || {};
+}
+
+function displayName(acct: KugouAccount): string {
+  return profile(acct).nickname || acct.nickname || '未命名账号';
+}
+
+function vipLabel(type: number): string {
+  if (!(type > 0)) return '';
+  return type === 1 ? '豪华 VIP' : `酷狗会员 Lv${type}`;
+}
+
+function genderLabel(g?: number): string {
+  if (g == null) return '';
+  return g === 1 ? '男' : g === 2 ? '女' : `性别 ${g}`;
+}
+
+async function loadDetails() {
+  const map: Record<number, AccountProfile> = {};
+  await Promise.allSettled(
+    accounts.value.map(async (acct) => {
+      try {
+        const res = await kugouApi.accountDetail(acct.id);
+        if (res.success && res.profile) map[acct.id] = res.profile;
+      } catch {
+        /* ignore */
+      }
+    })
+  );
+  details.value = map;
+}
+
 async function load() {
   loading.value = true;
   try {
@@ -284,6 +328,7 @@ async function load() {
     loading.value = false;
     loaded.value = true;
   }
+  await loadDetails();
 }
 
 async function activate(id: number) {
@@ -796,6 +841,20 @@ load();
   flex-shrink: 0;
 }
 
+/* 头像图片：复用 .row-avatar 的尺寸/圆角 */
+.row-avatar-img {
+  padding: 0;
+  overflow: hidden;
+  background: var(--surface-muted);
+}
+
+.row-avatar-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .row-body {
   flex: 1;
   min-width: 0;
@@ -836,6 +895,24 @@ load();
   font-size: 11px;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 会员徽标 */
+.vip-badge {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.4;
+  vertical-align: 2px;
+  color: #7c4dff;
+  background: rgba(124, 77, 255, 0.14);
+  border: 1px solid rgba(124, 77, 255, 0.35);
+}
+
+.sub-item {
   white-space: nowrap;
 }
 

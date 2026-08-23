@@ -26,13 +26,7 @@
   --radius-sm: 8px;
   --glass-blur: 12px;
   --font-display:
-    'Inter',
-    'HarmonyOS Sans SC',
-    'PingFang SC',
-    'Microsoft YaHei',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
+    'Inter', 'HarmonyOS Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI',
     sans-serif;
 
   color-scheme: light;
